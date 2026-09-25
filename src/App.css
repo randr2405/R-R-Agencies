@@ -136,3 +136,116 @@
   opacity: 0.6;
   max-width: 600px;
 }
+
+.astorra-scroll {
+  background: #0a0a12;
+  color: white;
+}
+
+.back-link-fixed {
+  position: fixed;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 10;
+  background: rgba(10, 10, 18, 0.7);
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+}
+
+.astorra-hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 1.5rem;
+  background: radial-gradient(circle at center, #1a1440 0%, #0a0a12 70%);
+}
+
+.astorra-hero h1 {
+  font-size: 3.5rem;
+  background: linear-gradient(135deg, #4DA6FF, #7B61FF, #4DFFB0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.astorra-hero p {
+  max-width: 560px;
+  opacity: 0.8;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.scroll-hint {
+  margin-top: 3rem;
+  opacity: 0.5;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.astorra-section {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 6rem 1.5rem;
+}
+
+.astorra-section h2 {
+  color: #4DA6FF;
+  font-size: 0.9rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 2rem;
+}
+
+.module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.module-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(123, 97, 255, 0.25);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+}
+
+.module-letter {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4DA6FF, #7B61FF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.module-row h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.25rem;
+}
+
+.module-row p {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+.astorra-outro {
+  text-align: center;
+  padding: 6rem 1.5rem 8rem;
+  opacity: 0.6;
+  font-size: 0.95rem;
+}
