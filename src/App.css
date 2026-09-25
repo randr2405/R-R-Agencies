@@ -435,3 +435,137 @@
   left: 0;
   color: var(--accent);
 }
+
+/* ===== Atelier ===== */
+
+.atelier-scroll {
+  background: #150f0a;
+  color: #f3ece0;
+}
+
+.atelier-back {
+  color: #d4af6a;
+}
+
+.atelier-hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 1.5rem;
+  background: radial-gradient(circle at center, #2a1d10 0%, #150f0a 70%);
+}
+
+.atelier-hero h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #d4af6a;
+  margin-bottom: 0.75rem;
+  letter-spacing: 1px;
+}
+
+.atelier-tagline {
+  font-style: italic;
+  font-size: 1.2rem;
+  opacity: 0.85;
+  color: #f3ece0;
+}
+
+.atelier-hint {
+  color: #d4af6a;
+  opacity: 0.6;
+}
+
+.atelier-menu {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+.atelier-group h3 {
+  color: #d4af6a;
+  font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.atelier-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.atelier-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(212, 175, 106, 0.2);
+  padding-bottom: 0.6rem;
+}
+
+.atelier-item-name {
+  display: block;
+  font-size: 1rem;
+}
+
+.atelier-item-desc {
+  display: block;
+  font-size: 0.82rem;
+  opacity: 0.6;
+  font-style: italic;
+  margin-top: 0.15rem;
+}
+
+.atelier-item-price {
+  color: #d4af6a;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.atelier-book {
+  text-align: center;
+  padding: 5rem 1.5rem 7rem;
+  background: radial-gradient(circle at center, #2a1d10 0%, #150f0a 70%);
+}
+
+.atelier-book h2 {
+  color: #d4af6a;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.atelier-book p {
+  opacity: 0.75;
+  margin-bottom: 2rem;
+}
+
+.atelier-cta-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.atelier-cta {
+  display: inline-block;
+  padding: 0.9rem 1.8rem;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #d4af6a, #a97c3f);
+  color: #150f0a;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.atelier-cta-alt {
+  background: transparent;
+  border: 1px solid #d4af6a;
+  color: #d4af6a;
+}
