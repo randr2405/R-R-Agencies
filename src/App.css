@@ -96,3 +96,43 @@
   color: var(--accent);
   margin: 1.5rem 0 1rem;
 }
+
+.division-intro {
+  font-size: 1.15rem;
+  max-width: 600px;
+  opacity: 0.85;
+  margin-bottom: 2rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  max-width: 900px;
+  margin-bottom: 2rem;
+}
+
+.feature-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.feature-item h3 {
+  color: var(--accent);
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.feature-item p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.division-outro {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  max-width: 600px;
+}
