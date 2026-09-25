@@ -569,3 +569,125 @@
   border: 1px solid #d4af6a;
   color: #d4af6a;
 }
+
+/* ===== Site Solutions ===== */
+
+.sitesol-title {
+  background: linear-gradient(135deg, #4DA6FF, #7B61FF, #14B8A6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.segment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.segment-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(77, 166, 255, 0.3);
+  border-radius: 14px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.segment-icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.segment-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.segment-card p {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+.sitesol-pricing-lede {
+  opacity: 0.75;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.portfolio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.portfolio-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(123, 97, 255, 0.25);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  color: white;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease;
+}
+
+.portfolio-link:hover {
+  border-color: #4DA6FF;
+}
+
+.portfolio-arrow {
+  color: #4DA6FF;
+}
+
+.sitesol-contact {
+  padding-top: 2rem;
+}
+
+.sitesol-contact h2 {
+  font-size: 1.8rem;
+  color: white;
+  opacity: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  margin-bottom: 2rem;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.contact-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: white;
+  text-decoration: none;
+  align-items: center;
+}
+
+.contact-item span:first-child {
+  font-size: 1.5rem;
+}
+
+.contact-item strong {
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  color: #14B8A6;
+}
