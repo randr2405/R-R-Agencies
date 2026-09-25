@@ -17,6 +17,26 @@ export default function Hub() {
 
   return (
     <div className="hub-container">
+      <svg className="hub-lines" viewBox="-350 -350 700 700">
+        {divisions.map((d, i) => {
+          const rad = (d.angle * Math.PI) / 180
+          const x = Math.cos(rad) * RADIUS
+          const y = Math.sin(rad) * RADIUS
+          return (
+            <motion.line
+              key={d.path}
+              x1="0" y1="0" x2={x} y2={y}
+              stroke={d.color}
+              strokeWidth="1.5"
+              strokeOpacity="0.35"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 1, delay: 0.3 + i * 0.15, ease: 'easeOut' }}
+            />
+          )
+        })}
+      </svg>
+
       <motion.div
         className="hub-center"
         initial={{ scale: 0, opacity: 0 }}
@@ -37,8 +57,8 @@ export default function Hub() {
             division={division}
             x={x}
             y={y}
-            delay={0.2 + i * 0.15}
-            onClick={() => navigate(division.path)}
+            delay={0.5 + i * 0.15}
+            onClick={() => navigate(division.path, { state: { color: division.color, name: division.name } })}
           />
         )
       })}

@@ -75,3 +75,24 @@
   text-decoration: none;
   font-size: 0.9rem;
 }
+
+.hub-lines {
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.division-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at center, color-mix(in srgb, var(--accent) 15%, #0a0a10) 0%, #0a0a10 70%);
+  color: white;
+  padding: 3rem;
+  font-family: inherit;
+}
+
+.division-page h1 {
+  color: var(--accent);
+  margin: 1.5rem 0 1rem;
+}

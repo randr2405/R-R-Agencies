@@ -1,11 +1,9 @@
-import { Link } from 'react-router-dom'
+import PageWrapper from '../components/PageWrapper'
 
 export default function SiteSolutions() {
   return (
-    <div className="division-page">
-      <Link to="/" className="back-link">← Back to hub</Link>
-      <h1>Site Solutions</h1>
+    <PageWrapper title="Site Solutions">
       <p>Websites, apps, custom software, business plans, brand management.</p>
-    </div>
+    </PageWrapper>
   )
 }
