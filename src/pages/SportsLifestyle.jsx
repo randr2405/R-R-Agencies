@@ -1,11 +1,9 @@
-import { Link } from 'react-router-dom'
+import PageWrapper from '../components/PageWrapper'
 
 export default function SportsLifestyle() {
   return (
-    <div className="division-page">
-      <Link to="/" className="back-link">← Back to hub</Link>
-      <h1>R&R Sports & Lifestyle</h1>
+    <PageWrapper title="R&R Sports & Lifestyle">
       <p>Our own clothing brand.</p>
-    </div>
+    </PageWrapper>
   )
 }

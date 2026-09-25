@@ -1,11 +1,9 @@
-import { Link } from 'react-router-dom'
+import PageWrapper from '../components/PageWrapper'
 
 export default function Astorra() {
   return (
-    <div className="division-page">
-      <Link to="/" className="back-link">← Back to hub</Link>
-      <h1>Astorra</h1>
+    <PageWrapper title="Astorra">
       <p>Custom business software — invoices, customer tracking, quotes, inventory, and more.</p>
-    </div>
+    </PageWrapper>
   )
 }

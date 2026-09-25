@@ -1,11 +1,9 @@
-import { Link } from 'react-router-dom'
+import PageWrapper from '../components/PageWrapper'
 
 export default function Agencies() {
   return (
-    <div className="division-page">
-      <Link to="/" className="back-link">← Back to hub</Link>
-      <h1>R&R Agencies</h1>
+    <PageWrapper title="R&R Agencies">
       <p>Branding and custom creative work.</p>
-    </div>
+    </PageWrapper>
   )
 }
