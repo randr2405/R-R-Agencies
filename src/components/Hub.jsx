@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 const divisions = [
-  { name: 'R&R Agencies', short: 'Branding & Custom', path: '/agencies', color: '#FF4D8D' },
-  { name: 'Site Solutions', short: 'Web, App & Software', path: '/site-solutions', color: '#4DA6FF' },
-  { name: 'Astorra', short: 'Business Software', path: '/astorra', color: '#7B61FF' },
-  { name: 'R&R Atelier', short: 'Nails', path: '/atelier', color: '#FF9F4D' },
-  { name: 'Sports & Lifestyle', short: 'Clothing Brand', path: '/sports-lifestyle', color: '#4DFFB0' },
+  { name: 'R&R Agencies', short: 'Branding & Custom', path: '/agencies', logo: '/logos/agencies.png', color: '#FF4D8D' },
+  { name: 'Site Solutions', short: 'Web, App & Software', path: '/site-solutions', logo: '/logos/site-solutions.png', color: '#4DA6FF' },
+  { name: 'Astorra', short: 'Business Software', path: '/astorra', logo: '/logos/astorra.png', color: '#7B61FF' },
+  { name: 'R&R Atelier', short: 'Nails', path: '/atelier', logo: '/logos/atelier.png', color: '#FF9F4D' },
+  { name: 'Sports & Lifestyle', short: 'Clothing Brand', path: '/sports-lifestyle', logo: '/logos/sports-lifestyle.png', color: '#4DFFB0' },
 ]
 
 const BACKGROUND = '#07070d'
@@ -1043,7 +1043,16 @@ class InfiniteGridMenu {
   }
 }
 
-function makeTile(division) {
+function loadImage(src) {
+  return new Promise(resolve => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => resolve(null)
+    img.src = src
+  })
+}
+
+async function makeTile(division) {
   const size = 512
   const canvas = document.createElement('canvas')
   canvas.width = size
@@ -1062,20 +1071,30 @@ function makeTile(division) {
   ctx.arc(size / 2, size / 2, size * 0.44, 0, Math.PI * 2)
   ctx.stroke()
 
-  ctx.fillStyle = '#ffffff'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
+  const logo = await loadImage(division.logo)
 
-  let fontSize = 56
-  do {
-    ctx.font = `800 ${fontSize}px Inter, system-ui, sans-serif`
-    fontSize -= 2
-  } while (ctx.measureText(division.name).width > 340 && fontSize > 20)
-  ctx.fillText(division.name, size / 2, size / 2 - 14)
+  if (logo) {
+    const box = size * 0.6
+    const ratio = Math.min(box / logo.width, box / logo.height)
+    const w = logo.width * ratio
+    const h = logo.height * ratio
+    ctx.drawImage(logo, (size - w) / 2, (size - h) / 2, w, h)
+  } else {
+    ctx.fillStyle = '#ffffff'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
 
-  ctx.font = '500 24px Inter, system-ui, sans-serif'
-  ctx.fillStyle = 'rgba(255,255,255,0.85)'
-  ctx.fillText(division.short, size / 2, size / 2 + 34)
+    let fontSize = 56
+    do {
+      ctx.font = `800 ${fontSize}px Inter, system-ui, sans-serif`
+      fontSize -= 2
+    } while (ctx.measureText(division.name).width > 340 && fontSize > 20)
+    ctx.fillText(division.name, size / 2, size / 2 - 14)
+
+    ctx.font = '500 24px Inter, system-ui, sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'
+    ctx.fillText(division.short, size / 2, size / 2 + 34)
+  }
 
   return canvas.toDataURL('image/png')
 }
@@ -1148,18 +1167,27 @@ function InfiniteMenu({ items, scale = 1.0, backgroundColor = BACKGROUND, onSele
 
 export default function Hub() {
   const navigate = useNavigate()
+  const [items, setItems] = useState(null)
 
-  const items = useMemo(
-    () =>
-      divisions.map(d => ({
-        image: makeTile(d),
+  useEffect(() => {
+    let cancelled = false
+
+    Promise.all(
+      divisions.map(async d => ({
+        image: await makeTile(d),
         title: d.name,
         description: d.short,
         path: d.path,
         color: d.color,
-      })),
-    []
-  )
+      }))
+    ).then(result => {
+      if (!cancelled) setItems(result)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleSelect = item => {
     navigate(item.path, { state: { color: item.color, name: item.title } })
@@ -1168,7 +1196,11 @@ export default function Hub() {
   return (
     <>
       <style>{STYLES}</style>
-      <InfiniteMenu items={items} scale={1} backgroundColor={BACKGROUND} onSelect={handleSelect} />
+      {items ? (
+        <InfiniteMenu items={items} scale={1} backgroundColor={BACKGROUND} onSelect={handleSelect} />
+      ) : (
+        <div className="hub-root" style={{ backgroundColor: BACKGROUND }} />
+      )}
     </>
   )
 }
