@@ -1059,23 +1059,39 @@ async function makeTile(division) {
   canvas.height = size
   const ctx = canvas.getContext('2d')
 
-  const bg = ctx.createRadialGradient(size * 0.3, size * 0.25, 20, size / 2, size / 2, size * 0.75)
-  bg.addColorStop(0, division.color)
-  bg.addColorStop(1, '#0b0b16')
-  ctx.fillStyle = bg
-  ctx.fillRect(0, 0, size, size)
-
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)'
-  ctx.lineWidth = 3
-  ctx.beginPath()
-  ctx.arc(size / 2, size / 2, size * 0.44, 0, Math.PI * 2)
-  ctx.stroke()
-
   const logo = await loadImage(division.logo)
 
+  let edgeColor = null
   if (logo) {
-    const box = size * 0.6
-    const ratio = Math.min(box / logo.width, box / logo.height)
+    const probe = document.createElement('canvas')
+    probe.width = logo.width
+    probe.height = logo.height
+    const pctx = probe.getContext('2d', { willReadFrequently: true })
+    pctx.drawImage(logo, 0, 0)
+    const [r, g, b, a] = pctx.getImageData(2, 2, 1, 1).data
+    if (a > 240) edgeColor = `rgb(${r},${g},${b})`
+  }
+
+  if (edgeColor) {
+    ctx.fillStyle = edgeColor
+    ctx.fillRect(0, 0, size, size)
+  } else {
+    const bg = ctx.createRadialGradient(size * 0.3, size * 0.25, 20, size / 2, size / 2, size * 0.75)
+    bg.addColorStop(0, division.color)
+    bg.addColorStop(1, '#0b0b16')
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, size, size)
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(size / 2, size / 2, size * 0.44, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+
+  if (logo) {
+    const reach = (size / 2) * (edgeColor ? 0.92 : 0.7)
+    const ratio = reach / (Math.hypot(logo.width, logo.height) / 2)
     const w = logo.width * ratio
     const h = logo.height * ratio
     ctx.drawImage(logo, (size - w) / 2, (size - h) / 2, w, h)
