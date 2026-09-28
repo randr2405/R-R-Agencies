@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useGesture } from '@use-gesture/react'
 
@@ -218,6 +218,120 @@ body.dg-scroll-lock {
 
 .shape-waves[data-ready='true'] .shape-waves__canvas {
   opacity: 1;
+}
+`
+
+const EXPERIENCE_STYLES = `
+.stitch-rail {
+  position: fixed;
+  left: 14px;
+  top: 12vh;
+  bottom: 12vh;
+  width: 24px;
+  z-index: 40;
+  pointer-events: none;
+}
+.stitch-rail svg { position: absolute; inset: 0; height: 100%; overflow: visible; }
+.stitch-track { stroke: rgba(224, 169, 59, 0.16); stroke-width: 2; stroke-dasharray: 9 7; stroke-linecap: round; }
+.stitch-live {
+  stroke: #F0C15A;
+  stroke-width: 2.5;
+  stroke-dasharray: 9 7;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(240, 193, 90, 0.7));
+}
+.stitch-needle {
+  position: absolute;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4px 0 0 -4.5px;
+  border-radius: 50%;
+  background: #fff6d8;
+  box-shadow: 0 0 0 4px rgba(240, 193, 90, 0.25), 0 0 18px 4px rgba(240, 193, 90, 0.8);
+}
+@media (max-width: 900px) { .stitch-rail { display: none; } }
+
+.agencies-page .agencies-title {
+  background-size: 220% 100%;
+  animation: title-sheen 7s ease-in-out infinite;
+}
+@keyframes title-sheen {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.agencies-page .astorra-section h2,
+.agencies-page .agencies-service h2 {
+  position: relative;
+  padding-bottom: 0.9rem;
+}
+.agencies-page .astorra-section h2::after,
+.agencies-page .agencies-service h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: min(220px, 40%);
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--accent, #E0A93B) 0 10px, transparent 10px 17px);
+  opacity: 0.85;
+}
+.agencies-page .astorra-section > h2:only-child::after { left: 50%; transform: translateX(-50%); }
+
+.agencies-page .agencies-service,
+.agencies-page .why-us .module-row,
+.agencies-page .contact-item {
+  position: relative;
+  isolation: isolate;
+  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1), border-color 350ms ease;
+}
+.agencies-page .agencies-service::before,
+.agencies-page .why-us .module-row::before,
+.agencies-page .contact-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 350ms ease;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent, #E0A93B) 16%, transparent), transparent 65%);
+}
+.agencies-page .agencies-service:hover::before,
+.agencies-page .why-us .module-row:hover::before,
+.agencies-page .contact-item:hover::before { opacity: 1; }
+
+.agencies-page .why-us .module-row,
+.agencies-page .contact-item {
+  border: 1px dashed rgba(224, 169, 59, 0.28);
+  border-radius: 18px;
+}
+.agencies-page .why-us .module-row:hover,
+.agencies-page .contact-item:hover {
+  border-color: rgba(240, 193, 90, 0.75);
+  transform: translateY(-4px);
+}
+
+.agencies-page .agencies-service {
+  border-radius: 24px;
+  background-image: repeating-linear-gradient(180deg, var(--accent) 0 12px, transparent 12px 20px);
+  background-size: 2px 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+.agencies-page .service-list li {
+  transition: transform 250ms ease, color 250ms ease;
+}
+.agencies-page .service-list li:hover { transform: translateX(6px); color: var(--accent); }
+
+.agencies-page .how-step-number { text-shadow: 0 0 40px rgba(224, 169, 59, 0.55); }
+
+.agencies-page a:focus-visible { outline: 2px solid #F0C15A; outline-offset: 4px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) {
+  .agencies-page .agencies-title { animation: none; }
+  .agencies-page * { transition-duration: 0.01ms !important; }
 }
 `
 
@@ -1607,6 +1721,42 @@ function ShapeWaves({
   )
 }
 
+function StitchThread() {
+  const { scrollYProgress } = useScroll()
+  const p = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.4 })
+  const maskHeight = useTransform(p, v => `${v * 100}%`)
+  const needleTop = useTransform(p, v => `${v * 100}%`)
+
+  return (
+    <div className="stitch-rail" aria-hidden="true">
+      <svg width="24" height="100%" preserveAspectRatio="none">
+        <defs>
+          <mask id="stitch-reveal">
+            <motion.rect x="0" y="0" width="24" style={{ height: maskHeight }} fill="#fff" />
+          </mask>
+        </defs>
+        <line x1="12" y1="0" x2="12" y2="100%" className="stitch-track" />
+        <line x1="12" y1="0" x2="12" y2="100%" className="stitch-live" mask="url(#stitch-reveal)" />
+      </svg>
+      <motion.span className="stitch-needle" style={{ top: needleTop }} />
+    </div>
+  )
+}
+
+function useSpotlight(selector = '.agencies-service, .module-row, .contact-item') {
+  useEffect(() => {
+    const onMove = e => {
+      const card = e.target.closest?.(selector)
+      if (!card) return
+      const r = card.getBoundingClientRect()
+      card.style.setProperty('--mx', `${e.clientX - r.left}px`)
+      card.style.setProperty('--my', `${e.clientY - r.top}px`)
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [selector])
+}
+
 function SectionHeading({ children }) {
   return (
     <motion.h2
@@ -1714,11 +1864,14 @@ function ServiceSection({ service, index }) {
 }
 
 export default function Agencies() {
+  useSpotlight()
+
   return (
     <div className="astorra-scroll agencies-page">
-      <style>{PAGE_STYLES + DOME_STYLES}</style>
+      <style>{PAGE_STYLES + DOME_STYLES + EXPERIENCE_STYLES}</style>
 
       <Link to="/" className="back-link back-link-fixed">← Back to hub</Link>
+      <StitchThread />
 
       <section className="astorra-hero">
         <div className="agencies-hero-bg">
