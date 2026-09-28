@@ -13,6 +13,8 @@ const divisions = [
 const BACKGROUND = '#07070d'
 
 const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+
 .hub-root {
   position: relative;
   width: 100%;
@@ -64,9 +66,12 @@ const STYLES = `
   user-select: none;
   position: absolute;
   z-index: 5;
-  font-weight: 900;
-  font-size: clamp(2rem, 5vw, 4rem);
-  line-height: 1.05;
+  font-family: 'Great Vibes', 'Snell Roundhand', 'Apple Chancery', cursive;
+  font-weight: 400;
+  font-size: clamp(2.8rem, 6.5vw, 5.5rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 28px rgba(255, 255, 255, 0.14);
   margin: 0;
   left: 6vw;
   top: 50%;
@@ -85,34 +90,6 @@ const STYLES = `
   pointer-events: none;
   opacity: 0;
   transform: translate(-6%, -50%);
-  transition: 0.1s ease;
-}
-
-.face-description {
-  user-select: none;
-  position: absolute;
-  z-index: 5;
-  max-width: 16ch;
-  top: 50%;
-  right: 6vw;
-  margin: 0;
-  font-size: 1.25rem;
-  line-height: 1.3;
-  text-align: right;
-  transform: translate(0, -50%);
-}
-
-.face-description.active {
-  opacity: 1;
-  transform: translate(0, -50%);
-  pointer-events: auto;
-  transition: 0.5s ease;
-}
-
-.face-description.inactive {
-  pointer-events: none;
-  transform: translate(6%, -50%);
-  opacity: 0;
   transition: 0.1s ease;
 }
 
@@ -170,12 +147,8 @@ const STYLES = `
     top: 16%;
     max-width: 90vw;
     text-align: center;
-    font-size: 2rem;
+    font-size: 2.8rem;
     transform: translate(-50%, 0);
-  }
-
-  .face-description {
-    display: none;
   }
 
   .hub-hint {
@@ -186,7 +159,6 @@ const STYLES = `
 
 @media (prefers-reduced-motion: reduce) {
   .face-title,
-  .face-description,
   .action-button {
     transition: none !important;
   }
@@ -1240,8 +1212,6 @@ function InfiniteMenu({ items, scale = 1.0, backgroundColor = BACKGROUND, onSele
           <h2 className={`face-title ${isMoving ? 'inactive' : 'active'}`} style={{ color: activeItem.color }}>
             {activeItem.title}
           </h2>
-
-          <p className={`face-description ${isMoving ? 'inactive' : 'active'}`}>{activeItem.description}</p>
 
           <button
             type="button"
