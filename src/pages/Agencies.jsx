@@ -114,14 +114,14 @@ const PAGE_STYLES = `
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 50% at 50% 45%, rgba(10, 10, 18, 0.6), transparent 75%),
+    radial-gradient(ellipse 70% 62% at 50% 48%, rgba(10, 10, 18, 0.88), rgba(10, 10, 18, 0.55) 55%, transparent 85%),
     linear-gradient(to bottom, transparent 55%, ${GALLERY_BACKGROUND} 100%);
 }
 
 .agencies-page .agencies-title {
   font-family: 'Pinyon Script', 'Snell Roundhand', 'Apple Chancery', cursive;
   font-weight: 400;
-  font-size: clamp(3.4rem, 10vw, 7.5rem);
+  font-size: clamp(3.6rem, 11vw, 8.5rem);
   line-height: 1.1;
   letter-spacing: 0.01em;
   background: linear-gradient(100deg, #b8801f 0%, #f5d98a 45%, ${GOLD} 60%, #b8801f 100%);
@@ -129,14 +129,34 @@ const PAGE_STYLES = `
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  -webkit-text-stroke: 2px #d9a238;
+  filter: drop-shadow(0 3px 22px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 3px rgba(0, 0, 0, 0.8));
 }
 
 .agencies-page .astorra-slogan {
-  color: #8fa8ff;
+  color: #a9bcff;
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0, 0, 0, 0.9);
+}
+
+.agencies-page .astorra-lede {
+  color: #ffffff;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  font-weight: 600;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0, 0, 0, 0.9);
+}
+
+.agencies-page .back-link {
+  font-weight: 600;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
 }
 
 .agencies-page .scroll-hint {
-  color: ${GOLD};
+  color: ${GOLD_LIGHT};
+  font-weight: 700;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
 }
 
 .agencies-page .how-step-number {
