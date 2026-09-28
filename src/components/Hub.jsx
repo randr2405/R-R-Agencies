@@ -13,7 +13,18 @@ const divisions = [
 const BACKGROUND = '#07070d'
 
 const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,600;1,400&display=swap');
+
+@property --glow {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #07070d;
+}
+
+@keyframes hubFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 .hub-root {
   position: relative;
@@ -22,16 +33,59 @@ const STYLES = `
   height: 100dvh;
   overflow: hidden;
   color: #fff;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+  transition: --glow 0.9s ease;
+  animation: hubFade 1.2s ease both;
+}
+
+.hub-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+.hub-root::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.hub-glow {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: 120vh;
+  height: 120vh;
+  max-width: 140vw;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--glow) 26%, transparent) 0%, transparent 62%);
+}
+
+.hub-frame {
+  position: absolute;
+  inset: 14px;
+  z-index: 4;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.09);
 }
 
 #infinite-grid-menu-canvas {
+  position: relative;
+  z-index: 1;
   display: block;
   cursor: grab;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  position: relative;
   outline: none;
 }
 
@@ -41,25 +95,51 @@ const STYLES = `
 
 .hub-brand {
   position: absolute;
-  top: 1.4rem;
-  left: 1.6rem;
+  top: 2rem;
+  left: 2.6rem;
   z-index: 5;
-  font-weight: 900;
-  font-size: 1.4rem;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  font-size: 1.7rem;
+  letter-spacing: 0.14em;
   user-select: none;
 }
 
 .hub-hint {
   position: absolute;
-  top: 1.6rem;
+  top: 2.1rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
-  font-size: 0.85rem;
-  opacity: 0.5;
+  font-style: italic;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
   user-select: none;
   pointer-events: none;
+}
+
+.hub-dots {
+  position: absolute;
+  right: 2.6rem;
+  top: 50%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.hub-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  transition: height 0.5s ease, background 0.5s ease;
+}
+
+.hub-dot.active {
+  height: 26px;
 }
 
 .face-title {
@@ -118,6 +198,7 @@ const STYLES = `
   border-radius: 50%;
   cursor: pointer;
   border: 5px solid var(--infinite-menu-background, #000);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 0 10px 44px color-mix(in srgb, var(--accent, #5227ff) 55%, transparent);
   color: #fff;
 }
 
@@ -132,6 +213,10 @@ const STYLES = `
   opacity: 1;
   pointer-events: auto;
   transition: 0.5s ease;
+}
+
+.action-button.active:hover {
+  transform: translateX(-50%) scale(1.08);
 }
 
 .action-button.inactive {
@@ -171,13 +256,30 @@ const STYLES = `
 
   .hub-hint {
     top: auto;
-    bottom: 1.2rem;
+    bottom: 1.8rem;
+  }
+
+  .hub-brand {
+    left: 1.6rem;
+  }
+
+  .hub-dots {
+    right: 1.4rem;
+  }
+
+  .hub-frame {
+    inset: 8px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hub-root {
+    animation: none;
+  }
+
   .face-title,
-  .action-button {
+  .action-button,
+  .hub-dot {
     transition: none !important;
   }
 }
@@ -1219,10 +1321,29 @@ function InfiniteMenu({ items, scale = 1.0, backgroundColor = BACKGROUND, onSele
   return (
     <div
       className="hub-root"
-      style={{ backgroundColor, '--infinite-menu-background': backgroundColor, '--accent': activeItem?.color }}
+      style={{
+        backgroundColor,
+        '--infinite-menu-background': backgroundColor,
+        '--accent': activeItem?.color,
+        '--glow': activeItem?.color,
+      }}
     >
+      <div className="hub-glow" />
+      <div className="hub-frame" />
       <div className="hub-brand">R&R</div>
       <div className="hub-hint">Drag to explore</div>
+      <div className="hub-dots" aria-hidden="true">
+        {items.map(item => {
+          const isActive = activeItem?.path === item.path
+          return (
+            <span
+              key={item.path}
+              className={`hub-dot ${isActive ? 'active' : ''}`}
+              style={isActive ? { background: item.color } : undefined}
+            />
+          )
+        })}
+      </div>
 
       <canvas id="infinite-grid-menu-canvas" ref={canvasRef} />
 
