@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 const divisions = [
-  { name: 'R&R Agencies', short: 'Branding & Custom', path: '/agencies', logo: '/logos/agencies.png', color: '#FF4D8D' },
+  { name: 'R&R Agencies', short: 'Branding & Custom', path: '/agencies', logo: '/logos/agencies.png', color: '#E0A93B' },
   { name: 'Site Solutions', short: 'Web, App & Software', path: '/site-solutions', logo: '/logos/site-solutions.png', color: '#4DA6FF' },
   { name: 'Astorra', short: 'Business Software', path: '/astorra', logo: '/logos/astorra.png', color: '#7B61FF' },
   { name: 'R&R Atelier', short: 'Nails', path: '/atelier', logo: '/logos/atelier.png', color: '#B36BFF' },
@@ -1061,6 +1061,7 @@ function analyzeLogo(logo) {
 
   for (let y = y0; y < y1; y++) {
     for (let x = x0; x < x1; x++) {
+      if (x >= w * 0.15 && x < w * 0.85 && y >= h * 0.15 && y < h * 0.85) continue
       const i = (y * w + x) * 4
       total++
       if (data[i + 3] < 40) {
