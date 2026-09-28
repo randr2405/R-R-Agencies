@@ -1052,6 +1052,91 @@ function loadImage(src) {
   })
 }
 
+function analyzeLogo(logo) {
+  const scale = Math.min(1, 400 / Math.max(logo.width, logo.height))
+  const w = Math.max(1, Math.round(logo.width * scale))
+  const h = Math.max(1, Math.round(logo.height * scale))
+  const probe = document.createElement('canvas')
+  probe.width = w
+  probe.height = h
+  const pctx = probe.getContext('2d', { willReadFrequently: true })
+  pctx.drawImage(logo, 0, 0, w, h)
+  const data = pctx.getImageData(0, 0, w, h).data
+
+  const x0 = Math.floor(w * 0.05)
+  const x1 = w - x0
+  const y0 = Math.floor(h * 0.05)
+  const y1 = h - y0
+
+  let transparent = 0
+  let total = 0
+  const buckets = new Map()
+
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const i = (y * w + x) * 4
+      total++
+      if (data[i + 3] < 40) {
+        transparent++
+        continue
+      }
+      const key = ((data[i] >> 4) << 8) | ((data[i + 1] >> 4) << 4) | (data[i + 2] >> 4)
+      let entry = buckets.get(key)
+      if (!entry) {
+        entry = { n: 0, r: 0, g: 0, b: 0 }
+        buckets.set(key, entry)
+      }
+      entry.n++
+      entry.r += data[i]
+      entry.g += data[i + 1]
+      entry.b += data[i + 2]
+    }
+  }
+
+  let bg = null
+  if (total > 0 && transparent / total <= 0.5) {
+    let best = null
+    for (const entry of buckets.values()) {
+      if (!best || entry.n > best.n) best = entry
+    }
+    if (best) bg = [Math.round(best.r / best.n), Math.round(best.g / best.n), Math.round(best.b / best.n)]
+  }
+
+  let minX = w
+  let minY = h
+  let maxX = -1
+  let maxY = -1
+
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const i = (y * w + x) * 4
+      if (data[i + 3] < 40) continue
+      if (bg) {
+        const dr = data[i] - bg[0]
+        const dg = data[i + 1] - bg[1]
+        const db = data[i + 2] - bg[2]
+        if (dr * dr + dg * dg + db * db < 2500) continue
+      }
+      if (x < minX) minX = x
+      if (x > maxX) maxX = x
+      if (y < minY) minY = y
+      if (y > maxY) maxY = y
+    }
+  }
+
+  const box =
+    maxX < 0
+      ? { x: 0, y: 0, w: logo.width, h: logo.height }
+      : {
+          x: minX / scale,
+          y: minY / scale,
+          w: (maxX - minX + 1) / scale,
+          h: (maxY - minY + 1) / scale,
+        }
+
+  return { bg: bg ? `rgb(${bg[0]},${bg[1]},${bg[2]})` : null, box }
+}
+
 async function makeTile(division) {
   const size = 512
   const canvas = document.createElement('canvas')
@@ -1060,26 +1145,16 @@ async function makeTile(division) {
   const ctx = canvas.getContext('2d')
 
   const logo = await loadImage(division.logo)
+  const info = logo ? analyzeLogo(logo) : null
 
-  let edgeColor = null
-  if (logo) {
-    const probe = document.createElement('canvas')
-    probe.width = logo.width
-    probe.height = logo.height
-    const pctx = probe.getContext('2d', { willReadFrequently: true })
-    pctx.drawImage(logo, 0, 0)
-    const [r, g, b, a] = pctx.getImageData(2, 2, 1, 1).data
-    if (a > 240) edgeColor = `rgb(${r},${g},${b})`
-  }
-
-  if (edgeColor) {
-    ctx.fillStyle = edgeColor
+  if (info && info.bg) {
+    ctx.fillStyle = info.bg
     ctx.fillRect(0, 0, size, size)
   } else {
-    const bg = ctx.createRadialGradient(size * 0.3, size * 0.25, 20, size / 2, size / 2, size * 0.75)
-    bg.addColorStop(0, division.color)
-    bg.addColorStop(1, '#0b0b16')
-    ctx.fillStyle = bg
+    const gradient = ctx.createRadialGradient(size * 0.3, size * 0.25, 20, size / 2, size / 2, size * 0.75)
+    gradient.addColorStop(0, division.color)
+    gradient.addColorStop(1, '#0b0b16')
+    ctx.fillStyle = gradient
     ctx.fillRect(0, 0, size, size)
 
     ctx.strokeStyle = 'rgba(255,255,255,0.25)'
@@ -1090,11 +1165,12 @@ async function makeTile(division) {
   }
 
   if (logo) {
-    const reach = (size / 2) * (edgeColor ? 0.92 : 0.7)
-    const ratio = reach / (Math.hypot(logo.width, logo.height) / 2)
-    const w = logo.width * ratio
-    const h = logo.height * ratio
-    ctx.drawImage(logo, (size - w) / 2, (size - h) / 2, w, h)
+    const { box } = info
+    const reach = (size / 2) * (info.bg ? 0.85 : 0.7)
+    const ratio = reach / (Math.hypot(box.w, box.h) / 2)
+    const dw = box.w * ratio
+    const dh = box.h * ratio
+    ctx.drawImage(logo, box.x, box.y, box.w, box.h, (size - dw) / 2, (size - dh) / 2, dw, dh)
   } else {
     ctx.fillStyle = '#ffffff'
     ctx.textAlign = 'center'
