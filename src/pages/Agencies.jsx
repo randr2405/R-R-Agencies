@@ -102,6 +102,17 @@ const PAGE_STYLES = `
   background: transparent;
 }
 
+.agencies-page .astorra-hero {
+  background: radial-gradient(ellipse at 50% 45%, rgba(40, 32, 110, 0.28) 0%, transparent 60%);
+}
+
+.agencies-page .astorra-section,
+.agencies-page .astorra-outro,
+.agencies-page .how-it-works,
+.agencies-page .agencies-service {
+  background: transparent;
+}
+
 .agencies-bg {
   position: fixed;
   inset: 0;
