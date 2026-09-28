@@ -7,7 +7,7 @@ const divisions = [
   { name: 'Site Solutions', short: 'Web, App & Software', path: '/site-solutions', logo: '/logos/site-solutions.png', color: '#4DA6FF' },
   { name: 'Astorra', short: 'Business Software', path: '/astorra', logo: '/logos/astorra.png', color: '#7B61FF' },
   { name: 'R&R Atelier', short: 'Nails', path: '/atelier', logo: '/logos/atelier.png', color: '#B36BFF' },
-  { name: 'Sports & Lifestyle', short: 'Clothing Brand', path: '/sports-lifestyle', logo: '/logos/sports-lifestyle.png', color: '#4DFFB0' },
+  { name: 'Sports & Lifestyle', short: 'Clothing Brand', path: '/sports-lifestyle', logo: '/logos/sports-lifestyle.png', color: '#4DFFB0', titleColor: '#FFFFFF' },
 ]
 
 const BACKGROUND = '#07070d'
@@ -1228,7 +1228,7 @@ function InfiniteMenu({ items, scale = 1.0, backgroundColor = BACKGROUND, onSele
 
       {activeItem && (
         <>
-          <h2 className={`face-title ${isMoving ? 'inactive' : 'active'}`} style={{ color: activeItem.color }}>
+          <h2 className={`face-title ${isMoving ? 'inactive' : 'active'}`} style={{ color: activeItem.titleColor || activeItem.color }}>
             {activeItem.title}
           </h2>
 
@@ -1260,6 +1260,7 @@ export default function Hub() {
         description: d.short,
         path: d.path,
         color: d.color,
+        titleColor: d.titleColor,
       }))
     ).then(result => {
       if (!cancelled) setItems(result)
