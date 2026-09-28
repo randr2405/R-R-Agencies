@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl'
 
-const IRIS_COLOR = [0.5, 0.42, 1]
+const IRIS_COLOR = [0.5, 0.6, 0.8]
 
 const vertexShader = `
 attribute vec2 uv;
@@ -43,6 +43,7 @@ void main() {
 
 function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude = 0.1, mouseReact = true }) {
   const ctnDom = useRef(null)
+  const mousePos = useRef({ x: 0.5, y: 0.5 })
 
   useEffect(() => {
     if (!ctnDom.current) return undefined
@@ -69,7 +70,7 @@ function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude = 0.1, mouseRea
         uTime: { value: 0 },
         uColor: { value: new Color(...color) },
         uResolution: { value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height) },
-        uMouse: { value: new Float32Array([0.5, 0.5]) },
+        uMouse: { value: new Float32Array([mousePos.current.x, mousePos.current.y]) },
         uAmplitude: { value: amplitude },
         uSpeed: { value: speed },
       },
@@ -87,8 +88,11 @@ function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude = 0.1, mouseRea
 
     function handleMouseMove(e) {
       const rect = ctn.getBoundingClientRect()
-      program.uniforms.uMouse.value[0] = (e.clientX - rect.left) / rect.width
-      program.uniforms.uMouse.value[1] = 1.0 - (e.clientY - rect.top) / rect.height
+      const x = (e.clientX - rect.left) / rect.width
+      const y = 1.0 - (e.clientY - rect.top) / rect.height
+      mousePos.current = { x, y }
+      program.uniforms.uMouse.value[0] = x
+      program.uniforms.uMouse.value[1] = y
     }
     if (mouseReact) window.addEventListener('mousemove', handleMouseMove)
 
@@ -170,14 +174,14 @@ const STYLES = `
 .as a { color: inherit; text-decoration: none; }
 .as a:focus-visible, .as button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; border-radius: 8px; }
 
-.as-bg { position: fixed; inset: 0; z-index: 0; }
+.as-hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .as-iris { width: 100%; height: 100%; }
 .as-iris canvas { display: block; width: 100% !important; height: 100% !important; }
 .as-veil {
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(5, 5, 15, 0.35), rgba(5, 5, 15, 0.86) 75%),
-    linear-gradient(to bottom, rgba(5, 5, 15, 0.55), rgba(5, 5, 15, 0.88));
+    radial-gradient(ellipse 70% 55% at 50% 45%, rgba(5, 5, 15, 0.45), rgba(5, 5, 15, 0.1) 80%),
+    linear-gradient(to bottom, rgba(5, 5, 15, 0.3) 0%, rgba(5, 5, 15, 0.1) 45%, var(--ink) 100%);
 }
 .as-main { position: relative; z-index: 1; }
 
@@ -193,7 +197,8 @@ const STYLES = `
 }
 .as-back:hover { transform: translateX(-3px); border-color: var(--cyan); }
 
-.as-hero { min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 120px 24px 90px; position: relative; }
+.as-hero { min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 120px 24px 90px; position: relative; overflow: hidden; }
+.as-hero-content { position: relative; z-index: 1; }
 .as-wordmark {
   font-size: clamp(2.6rem, 10.5vw, 8.6rem); font-weight: 300; letter-spacing: 0.34em; margin-right: -0.34em;
   line-height: 1.1; text-transform: uppercase;
@@ -213,7 +218,7 @@ const STYLES = `
   transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms ease;
 }
 .as-btn:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 18px 60px rgba(34, 217, 230, 0.45); }
-.as-scroll { position: absolute; bottom: 28px; left: 50%; translate: -50% 0; color: var(--muted); font-size: 0.9rem; }
+.as-scroll { position: absolute; z-index: 1; bottom: 28px; left: 50%; translate: -50% 0; color: var(--muted); font-size: 0.9rem; }
 
 .as-section { max-width: 1240px; margin: 0 auto; padding: clamp(80px, 11vw, 140px) clamp(20px, 5vw, 64px); }
 .as-h2 { font-size: clamp(2rem, 4.8vw, 3.5rem); font-weight: 300; line-height: 1.1; letter-spacing: -0.01em; max-width: 18ch; }
@@ -480,16 +485,16 @@ export default function Astorra() {
   return (
     <div className="as">
       <style>{STYLES}</style>
-      <div className="as-bg" aria-hidden="true">
-        <Iridescence color={IRIS_COLOR} mouseReact amplitude={0.1} speed={1} />
-        <div className="as-veil" />
-      </div>
       <motion.div className="as-bar" style={{ scaleX: bar }} />
       <Link to="/" className="as-back">← Back to hub</Link>
 
       <main className="as-main">
         <section className="as-hero">
-          <div>
+          <div className="as-hero-bg" aria-hidden="true">
+            <Iridescence color={IRIS_COLOR} mouseReact amplitude={0.1} speed={1} />
+            <div className="as-veil" />
+          </div>
+          <div className="as-hero-content">
             <motion.h1 className="as-wordmark" initial={{ opacity: 0, y: 30, filter: 'blur(14px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}>
               Astorra
             </motion.h1>
