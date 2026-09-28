@@ -9,14 +9,16 @@ const GOLD_LIGHT = '#F0C15A'
 const GALLERY_BACKGROUND = '#0a0a12'
 
 const galleryImages = [
-  { src: '/gallery/work-1.jpg', alt: 'R&R Agencies work' },
-  { src: '/gallery/work-2.jpg', alt: 'R&R Agencies work' },
-  { src: '/gallery/work-3.jpg', alt: 'R&R Agencies work' },
-  { src: '/gallery/work-4.jpg', alt: 'R&R Agencies work' },
-  { src: '/gallery/work-5.jpg', alt: 'R&R Agencies work' },
-  { src: '/gallery/work-6.jpg', alt: 'R&R Agencies work' },
-  { src: '/gallery/work-7.jpg', alt: 'R&R Agencies work' },
-  { src: '/gallery/work-8.jpg', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery1.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery2.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery3.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery4.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery5.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery6.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery7.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery8.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery9.png', alt: 'R&R Agencies work' },
+  { src: '/gallery/gallery10.png', alt: 'R&R Agencies work' },
 ]
 
 const MAPS_URL =
@@ -121,16 +123,28 @@ const PAGE_STYLES = `
   color: ${GOLD};
 }
 
+.agencies-page {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 .agencies-gallery {
   position: relative;
-  width: min(1200px, 92vw);
+  width: 100%;
+  max-width: 1200px;
   height: min(78vh, 820px);
   min-height: 480px;
   margin: 2rem auto 0;
   border-radius: 28px;
   overflow: hidden;
+  contain: paint;
+  isolation: isolate;
   border: 1px solid rgba(224, 169, 59, 0.3);
   box-shadow: 0 0 90px rgba(61, 107, 255, 0.14);
+}
+
+.agencies-gallery .sphere-root {
+  overflow: hidden;
 }
 
 .agencies-gallery-note {
