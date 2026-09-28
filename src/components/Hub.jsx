@@ -73,9 +73,10 @@ const STYLES = `
   letter-spacing: 0.01em;
   text-wrap: balance;
   margin: 0;
-  left: 5vw;
+  right: calc(50vw + 36vh + 1.5vw);
   top: 50%;
-  max-width: max(9rem, calc(50vw - 34vh - 7vw));
+  text-align: right;
+  max-width: max(8rem, calc(50vw - 36vh - 16vw));
   transform: translate(0, -50%);
 }
 
@@ -85,6 +86,7 @@ const STYLES = `
   width: 3.5rem;
   height: 1px;
   margin-top: 0.9rem;
+  margin-left: auto;
   background: currentColor;
   opacity: 0.6;
 }
@@ -154,6 +156,7 @@ const STYLES = `
   .face-title.active,
   .face-title.inactive {
     left: 50%;
+    right: auto;
     top: 16%;
     max-width: 90vw;
     text-align: center;
