@@ -1,14 +1,16 @@
-import { useEffect, useRef } from 'react'
-import { motion, useScroll, useSpring } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl'
 
+const ORCHID = '#a66bff'
 const PURPLE = '#7a1fd1'
-const PURPLE_DEEP = '#4b1287'
+const PLUM = '#1a0b2e'
+const PLUM_SOFT = '#2a1247'
 const GOLD = '#c9962e'
-const GOLD_LIGHT = '#e8c46a'
-const CREAM = '#fbf5e4'
-const INK = '#0c0a10'
+const GOLD_LIGHT = '#f0d489'
+const PEARL = '#fbf7fc'
+const LILAC = '#f1e7fa'
 
 const MAPS_URL =
   'https://www.google.com/maps/search/?api=1&query=' +
@@ -68,6 +70,14 @@ const addOns = [
   { name: 'Extra Length', price: 'R50' },
 ]
 
+const menuTabs = [
+  { id: 'nails', label: 'Nail services', items: nailServices },
+  { id: 'manicures', label: 'Manicures', items: manicures },
+  { id: 'pedicures', label: 'Pedicures', items: pedicures },
+  { id: 'combos', label: 'Combos', items: combos },
+  { id: 'addons', label: 'Add-ons', items: addOns },
+]
+
 const whyUs = [
   { title: 'Sanitised twice, every appointment', desc: 'All equipment is sanitised after the previous appointment and again before the next one begins.' },
   { title: 'Walk-ins and appointments', desc: 'Book ahead, or drop in and we will fit you in whenever there is space.' },
@@ -92,6 +102,16 @@ const policies = [
   { title: 'Cancellations', desc: 'Please give us 24 hours notice.' },
   { title: 'Payment', desc: 'Cash or card.' },
 ]
+
+const swatches = [
+  { cls: 'gel', label: 'Rubber base' },
+  { cls: 'chrome', label: 'Chrome' },
+  { cls: 'cat', label: 'Cat eye' },
+  { cls: 'ombre', label: 'Ombre' },
+  { cls: 'foil', label: 'Foil' },
+]
+
+const ticker = ['Rubber Base Gel', 'Acrylic Overlay', 'Cat Eye', 'Chrome', 'Ombre', 'Manicures', 'Pedicures', 'Nail Art', 'Gel Toes']
 
 function debounce(func, wait) {
   let timeout
@@ -655,22 +675,23 @@ function CircularGallery({
 }
 
 const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;0,900;1,400&family=Jost:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=Figtree:wght@300;400;500;600;700&display=swap');
 
 .at {
+  --orchid: ${ORCHID};
   --purple: ${PURPLE};
-  --purple-deep: ${PURPLE_DEEP};
+  --plum: ${PLUM};
+  --plum-soft: ${PLUM_SOFT};
   --gold: ${GOLD};
   --gold-light: ${GOLD_LIGHT};
-  --cream: ${CREAM};
-  --ink: ${INK};
-  --ink-soft: #1a1522;
-  --text: #2a2130;
-  --muted: rgba(42, 33, 48, 0.68);
-  --muted-light: rgba(251, 245, 228, 0.72);
-  background: var(--cream);
+  --pearl: ${PEARL};
+  --lilac: ${LILAC};
+  --text: #2b1d3d;
+  --muted: rgba(43, 29, 61, 0.7);
+  --muted-light: rgba(251, 247, 252, 0.74);
+  background: var(--pearl);
   color: var(--text);
-  font-family: 'Jost', system-ui, sans-serif;
+  font-family: 'Figtree', system-ui, sans-serif;
   line-height: 1.65;
   overflow-x: clip;
   min-height: 100vh;
@@ -681,53 +702,51 @@ const STYLES = `
 .at ul { list-style: none; }
 .at address { font-style: normal; }
 .at a { color: inherit; text-decoration: none; }
-.at a:focus-visible, .at button:focus-visible { outline: 2px solid var(--purple); outline-offset: 4px; border-radius: 6px; }
+.at a:focus-visible, .at button:focus-visible { outline: 2px solid var(--orchid); outline-offset: 4px; border-radius: 8px; }
 
 .at-bar {
   position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 70; transform-origin: 0 50%;
-  background: linear-gradient(90deg, var(--purple), var(--gold-light));
+  background: linear-gradient(90deg, var(--purple), var(--orchid), var(--gold-light));
+  box-shadow: 0 0 14px rgba(166, 107, 255, 0.7);
 }
 .at-back {
   position: fixed; top: 18px; left: 22px; z-index: 60; font-weight: 500; font-size: 0.92rem;
-  padding: 9px 18px; border-radius: 999px; background: rgba(251, 245, 228, 0.85); backdrop-filter: blur(12px);
-  border: 1px solid rgba(201, 150, 46, 0.6); color: var(--ink);
+  padding: 9px 18px; border-radius: 999px; color: #fff;
+  background: rgba(26, 11, 46, 0.6); backdrop-filter: blur(14px);
+  border: 1px solid rgba(240, 212, 137, 0.5);
   transition: transform 250ms ease, border-color 250ms ease;
 }
-.at-back:hover { transform: translateX(-3px); border-color: var(--purple); }
+.at-back:hover { transform: translateX(-3px); border-color: var(--gold-light); }
 
 .at-hero {
   position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center;
-  padding: 120px 24px 100px; overflow: hidden; isolation: isolate;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 42%, rgba(255, 255, 255, 0.85), transparent 70%),
-    var(--cream);
+  padding: 120px 24px 110px; overflow: hidden; isolation: isolate; color: #fff;
+  background: linear-gradient(180deg, #12061f 0%, var(--plum) 55%, #24103f 100%);
 }
-.at-ring {
-  position: absolute; left: 50%; top: 50%; width: min(86vw, 760px); aspect-ratio: 1; translate: -50% -50%;
-  z-index: -1; pointer-events: none;
+.at-orb { position: absolute; border-radius: 50%; filter: blur(70px); z-index: -1; pointer-events: none; }
+.at-orb.a { width: 46vw; height: 46vw; left: -12vw; top: -10vw; background: radial-gradient(circle, rgba(122, 31, 209, 0.75), transparent 68%); }
+.at-orb.b { width: 40vw; height: 40vw; right: -10vw; top: 18vh; background: radial-gradient(circle, rgba(166, 107, 255, 0.45), transparent 68%); }
+.at-orb.c { width: 34vw; height: 34vw; left: 30vw; bottom: -16vw; background: radial-gradient(circle, rgba(201, 150, 46, 0.4), transparent 68%); }
+.at-hero-inner { width: min(980px, 100%); display: flex; flex-direction: column; align-items: center; }
+
+.at-wordmark { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.at-wm-small {
+  display: flex; align-items: center; gap: 18px; width: 100%; justify-content: center;
+  font-family: 'Cinzel', serif; font-weight: 600; font-size: clamp(1.1rem, 3vw, 1.8rem);
+  letter-spacing: 0.5em; margin-right: -0.5em; color: var(--gold-light);
 }
-.at-ring svg { width: 100%; height: 100%; overflow: visible; }
-.at-ring path { fill: none; stroke-width: 2.5; stroke-linecap: round; }
-.at-hero-inner { width: min(900px, 100%); display: flex; flex-direction: column; align-items: center; }
-.at-crown { width: 74px; height: auto; margin-bottom: 4px; filter: drop-shadow(0 4px 8px rgba(201, 150, 46, 0.35)); }
-.at-mark {
-  font-family: 'Playfair Display', serif; font-weight: 900; line-height: 0.95;
-  font-size: clamp(5rem, 22vw, 15rem); letter-spacing: -0.02em; color: var(--ink);
-  background: linear-gradient(160deg, #3a3344 0%, #000 38%, #1c1724 62%, #000 100%);
+.at-wm-small::before, .at-wm-small::after { content: ''; flex: 1; max-width: 140px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+.at-wm-small::after { background: linear-gradient(270deg, transparent, var(--gold)); }
+.at-wm-big {
+  margin-top: 0.1em; padding: 0.06em 0.12em 0.14em;
+  font-family: 'Fraunces', serif; font-style: italic; font-weight: 300; font-optical-sizing: auto;
+  font-size: clamp(4.4rem, 17vw, 12.5rem); letter-spacing: -0.03em;
+  background: linear-gradient(180deg, #fff 8%, var(--gold-light) 52%, var(--orchid) 100%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 8px 14px rgba(12, 10, 16, 0.25));
-  display: flex; align-items: center; justify-content: center; gap: 0.02em;
+  filter: drop-shadow(0 0 46px rgba(166, 107, 255, 0.5));
 }
-.at-mark .amp { font-style: italic; font-weight: 400; font-size: 0.62em; color: var(--purple); -webkit-text-fill-color: var(--purple); }
-.at-name {
-  display: flex; align-items: center; gap: clamp(14px, 3vw, 34px); width: 100%; justify-content: center;
-  font-family: 'Cinzel', serif; font-weight: 700; font-size: clamp(1.3rem, 4.4vw, 2.6rem);
-  letter-spacing: 0.55em; margin-right: -0.55em; color: var(--ink); margin-top: -0.4rem;
-}
-.at-name::before, .at-name::after { content: ''; flex: 1; max-width: 190px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
-.at-name::after { background: linear-gradient(270deg, transparent, var(--gold)); }
-.at-tagline { margin-top: 0.7rem; font-family: 'Great Vibes', cursive; font-size: clamp(2rem, 6vw, 3.6rem); color: var(--ink); line-height: 1.2; }
-.at-lede { margin: 1.4rem auto 0; max-width: 34rem; font-size: clamp(1.02rem, 1.7vw, 1.2rem); color: var(--muted); font-weight: 400; }
+.at-tagline { margin-top: 0.6rem; font-family: 'Fraunces', serif; font-style: italic; font-weight: 300; font-size: clamp(1.4rem, 3.4vw, 2.2rem); color: var(--gold-light); }
+.at-lede { margin: 1.2rem auto 0; max-width: 34rem; font-size: clamp(1rem, 1.7vw, 1.2rem); color: var(--muted-light); }
 .at-cta-row { margin-top: 2.2rem; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 .at-btn {
   display: inline-flex; align-items: center; justify-content: center; padding: 14px 32px; border-radius: 999px;
@@ -735,126 +754,146 @@ const STYLES = `
   transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 250ms ease, background 250ms ease;
 }
 .at-btn:hover { transform: translateY(-3px); }
-.at-btn-purple { background: linear-gradient(120deg, var(--purple), var(--purple-deep)); color: #fff; box-shadow: 0 10px 30px rgba(122, 31, 209, 0.35); }
+.at-btn-gold { background: linear-gradient(115deg, var(--gold), var(--gold-light)); color: #1f1405; box-shadow: 0 10px 34px rgba(201, 150, 46, 0.35); }
+.at-btn-gold:hover { box-shadow: 0 16px 44px rgba(201, 150, 46, 0.55); }
+.at-btn-ghost { background: rgba(255, 255, 255, 0.04); color: #fff; border-color: rgba(240, 212, 137, 0.6); }
+.at-btn-ghost:hover { background: rgba(240, 212, 137, 0.14); }
+.at-btn-purple { background: linear-gradient(120deg, var(--purple), var(--orchid)); color: #fff; box-shadow: 0 10px 30px rgba(122, 31, 209, 0.35); }
 .at-btn-purple:hover { box-shadow: 0 16px 40px rgba(122, 31, 209, 0.5); }
-.at-btn-line { background: transparent; color: var(--ink); border-color: var(--gold); }
-.at-btn-line:hover { background: rgba(201, 150, 46, 0.14); }
-.at-btn-gold { background: linear-gradient(120deg, var(--gold), var(--gold-light)); color: #1a1204; box-shadow: 0 10px 30px rgba(201, 150, 46, 0.3); }
-.at-btn-gold:hover { box-shadow: 0 16px 40px rgba(201, 150, 46, 0.5); }
-.at-btn-ghost { background: transparent; color: var(--cream); border-color: rgba(232, 196, 106, 0.6); }
-.at-btn-ghost:hover { background: rgba(232, 196, 106, 0.14); }
-.at-scroll { position: absolute; bottom: 26px; left: 50%; translate: -50% 0; color: var(--gold); font-weight: 500; font-size: 0.9rem; }
-.at-spark { position: absolute; color: var(--gold); pointer-events: none; }
+
+.at-nails { margin-top: 3.4rem; display: flex; gap: clamp(14px, 3.4vw, 34px); justify-content: center; align-items: flex-end; flex-wrap: wrap; }
+.at-nail-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.at-nail-wrap:nth-child(odd) { margin-bottom: 18px; }
+.at-nail {
+  position: relative; width: clamp(46px, 7vw, 68px); height: clamp(70px, 10.5vw, 102px);
+  border-radius: 999px 999px 22px 22px / 60% 60% 22px 22px; overflow: hidden;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45), inset 0 -8px 14px rgba(0, 0, 0, 0.22);
+}
+.at-nail::after {
+  content: ''; position: absolute; top: 8%; left: 18%; width: 22%; height: 46%; border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
+}
+.at-nail.gel { background: linear-gradient(160deg, #c79bff, var(--purple) 60%, #4b1287); }
+.at-nail.chrome { background: linear-gradient(135deg, #fafafd, #9494a6 38%, #f2f2f7 58%, #72728a); }
+.at-nail.cat { background: linear-gradient(112deg, #2a0f4a 28%, #c9a0ff 47%, #2a0f4a 66%); }
+.at-nail.ombre { background: linear-gradient(0deg, #ff9fd0, var(--purple)); }
+.at-nail.foil { background: linear-gradient(135deg, #f7e3a1, var(--gold) 45%, #f0d489 70%, #a87517); }
+.at-nail-label { font-size: 0.82rem; color: var(--muted-light); letter-spacing: 0.02em; }
+.at-scroll { position: absolute; bottom: 24px; left: 50%; translate: -50% 0; color: var(--gold-light); font-weight: 500; font-size: 0.9rem; }
+.at-spark { position: absolute; color: var(--gold-light); pointer-events: none; }
+
+.at-strip { background: var(--gold); color: var(--plum); overflow: hidden; border-block: 1px solid rgba(26, 11, 46, 0.25); }
+.at-strip-track { display: flex; width: max-content; animation: at-slide 38s linear infinite; }
+.at-strip-item { display: flex; align-items: center; gap: 28px; padding: 13px 0 13px 28px; font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 1.25rem; white-space: nowrap; }
+.at-strip-item i { font-style: normal; font-size: 0.9rem; }
+@keyframes at-slide { to { transform: translateX(-50%); } }
 
 .at-section { max-width: 1240px; margin: 0 auto; padding: clamp(80px, 11vw, 140px) clamp(20px, 5vw, 64px); }
-.at-h2 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: clamp(2rem, 4.8vw, 3.4rem); line-height: 1.1; color: var(--ink); max-width: 18ch; }
+.at-h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(2.1rem, 5vw, 3.6rem); line-height: 1.08; letter-spacing: -0.015em; color: var(--plum); max-width: 17ch; }
 .at-sub { margin-top: 1rem; color: var(--muted); max-width: 34rem; }
-.at-rule { display: block; margin-top: 1.2rem; width: 110px; height: 2px; background: linear-gradient(90deg, var(--purple), var(--gold-light)); }
+.at-rule { display: block; margin-top: 1.2rem; width: 96px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--purple), var(--gold-light)); }
 
-.at-about { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: clamp(28px, 6vw, 90px); align-items: start; }
-.at-about-copy p { margin-top: 1.2rem; font-size: 1.1rem; color: var(--muted); max-width: 36rem; }
-.at-about-copy p:first-of-type { margin-top: 1.6rem; }
+.at-about-wrap { background: var(--lilac); }
+.at-about { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: clamp(28px, 6vw, 90px); align-items: center; }
+.at-about-copy p { margin-top: 1.2rem; font-size: 1.12rem; color: var(--muted); max-width: 36rem; }
+.at-about-copy p:first-of-type { margin-top: 1.8rem; }
 .at-hours {
-  padding: 34px 32px; border-radius: 26px; background: var(--ink); color: var(--cream);
-  border: 1px solid rgba(232, 196, 106, 0.4); box-shadow: 0 30px 60px rgba(12, 10, 16, 0.18);
+  position: relative; padding: 36px 34px; border-radius: 30px 30px 30px 90px; color: #fff; overflow: hidden;
+  background: linear-gradient(155deg, var(--plum-soft), var(--plum));
+  box-shadow: 0 34px 70px rgba(26, 11, 46, 0.28);
 }
-.at-hours h3 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.6rem; color: var(--gold-light); margin-bottom: 1rem; }
-.at-hours li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgba(232, 196, 106, 0.18); }
+.at-hours::before { content: ''; position: absolute; right: -60px; top: -60px; width: 190px; height: 190px; border-radius: 50%; background: radial-gradient(circle, rgba(201, 150, 46, 0.5), transparent 70%); }
+.at-hours h3 { position: relative; font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.7rem; color: var(--gold-light); margin-bottom: 0.8rem; }
+.at-hours li { position: relative; display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgba(240, 212, 137, 0.18); }
 .at-hours li:last-child { border-bottom: 0; }
 .at-hours li span:last-child { color: var(--muted-light); }
 
-.at-menu-wrap { background: #fff9ea; border-top: 1px solid rgba(201, 150, 46, 0.35); border-bottom: 1px solid rgba(201, 150, 46, 0.35); }
-.at-menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(36px, 5vw, 72px) clamp(28px, 5vw, 80px); margin-top: 3.4rem; align-items: start; }
-.at-group h3 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.9rem; color: var(--purple); padding-bottom: 12px; border-bottom: 2px solid var(--gold); margin-bottom: 8px; }
-.at-item { display: flex; align-items: baseline; gap: 12px; padding: 13px 0; }
-.at-item-main { flex: 1; min-width: 0; }
-.at-item-name { display: block; font-weight: 500; font-size: 1.05rem; color: var(--ink); }
-.at-item-desc { display: block; font-size: 0.92rem; color: var(--muted); margin-top: 2px; }
-.at-item-price { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.1rem; color: var(--ink); white-space: nowrap; }
-.at-item + .at-item { border-top: 1px dotted rgba(201, 150, 46, 0.6); }
-.at-span-2 { grid-column: 1 / -1; }
-.at-span-2 .at-items { columns: 2; column-gap: clamp(28px, 5vw, 80px); }
-.at-span-2 .at-item { break-inside: avoid; }
-
-.at-why { display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; margin-top: 3.2rem; }
-.at-why-card {
-  grid-column: span 2; padding: 30px 28px; border-radius: 22px; background: #fff;
-  border: 1px solid rgba(201, 150, 46, 0.4);
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease, box-shadow 300ms ease;
+.at-menu-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px; }
+.at-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2.8rem; }
+.at-tab {
+  cursor: pointer; font-family: inherit; font-weight: 600; font-size: 0.98rem; padding: 12px 22px; border-radius: 999px;
+  color: var(--plum); background: transparent; border: 1px solid rgba(122, 31, 209, 0.3);
+  transition: background 250ms ease, color 250ms ease, border-color 250ms ease, transform 250ms ease;
 }
-.at-why-card:nth-child(1) { grid-column: span 4; background: var(--ink); color: var(--cream); border-color: rgba(232, 196, 106, 0.5); }
-.at-why-card:nth-child(1) h3 { color: var(--gold-light); }
-.at-why-card:nth-child(1) p { color: var(--muted-light); }
-.at-why-card:nth-child(4), .at-why-card:nth-child(5) { grid-column: span 3; }
-.at-why-card:hover { transform: translateY(-5px); border-color: var(--purple); box-shadow: 0 20px 44px rgba(122, 31, 209, 0.14); }
-.at-why-card h3 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.35rem; color: var(--purple); margin-bottom: 0.5rem; }
-.at-why-card p { color: var(--muted); }
+.at-tab:hover { border-color: var(--purple); transform: translateY(-2px); }
+.at-tab[aria-selected='true'] { background: linear-gradient(120deg, var(--purple), var(--orchid)); color: #fff; border-color: transparent; box-shadow: 0 10px 26px rgba(122, 31, 209, 0.32); }
+.at-menu-panel {
+  margin-top: 1.6rem; padding: clamp(24px, 4vw, 52px); border-radius: 34px; background: #fff;
+  border: 1px solid rgba(122, 31, 209, 0.16); box-shadow: 0 30px 70px rgba(122, 31, 209, 0.1);
+}
+.at-items.two { columns: 2; column-gap: clamp(32px, 6vw, 88px); }
+.at-item { display: flex; align-items: baseline; gap: 12px; padding: 15px 0; break-inside: avoid; }
+.at-item-main { min-width: 0; }
+.at-item-name { display: block; font-weight: 600; font-size: 1.05rem; color: var(--plum); }
+.at-item-desc { display: block; font-size: 0.92rem; color: var(--muted); margin-top: 2px; max-width: 34rem; }
+.at-item-dots { flex: 1; min-width: 20px; border-bottom: 2px dotted rgba(201, 150, 46, 0.7); transform: translateY(-4px); }
+.at-item-price { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.15rem; color: var(--purple); white-space: nowrap; }
 
-.at-dark { background: var(--ink); color: var(--cream); position: relative; }
-.at-dark .at-h2 { color: var(--cream); }
+.at-why-wrap { background: linear-gradient(180deg, var(--plum), #12061f); color: #fff; position: relative; overflow: hidden; }
+.at-why-wrap .at-h2 { color: #fff; }
+.at-why { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: clamp(28px, 6vw, 90px); align-items: start; }
+.at-why-head { position: sticky; top: 110px; }
+.at-why-list { display: flex; flex-direction: column; }
+.at-why-row { display: grid; grid-template-columns: 34px 1fr; gap: 20px; padding: 30px 0; border-top: 1px solid rgba(240, 212, 137, 0.28); transition: padding-left 300ms ease; }
+.at-why-row:last-child { border-bottom: 1px solid rgba(240, 212, 137, 0.28); }
+.at-why-row:hover { padding-left: 12px; }
+.at-why-row svg { width: 28px; height: 28px; color: var(--gold-light); margin-top: 6px; }
+.at-why-row h3 { font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(1.4rem, 2.6vw, 1.9rem); line-height: 1.2; color: #fff; }
+.at-why-row p { margin-top: 0.4rem; color: var(--muted-light); max-width: 32rem; }
+
+.at-dark { background: #12061f; color: #fff; position: relative; }
+.at-dark .at-h2 { color: #fff; }
 .at-dark .at-sub { color: var(--muted-light); }
 .at-gallery-box { position: relative; height: 600px; margin-top: 2.6rem; }
-.at-hint { margin-top: 1.4rem; color: var(--muted-light); font-size: 0.95rem; }
-
 .circular-gallery { width: 100%; height: 100%; overflow: hidden; cursor: grab; }
 .circular-gallery:active { cursor: grabbing; }
 .circular-gallery:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 4px; }
 
+.at-book-wrap { background: linear-gradient(135deg, var(--purple), #4b1287 60%, var(--plum)); color: #fff; }
+.at-book-wrap .at-h2 { color: #fff; }
 .at-book-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 6vw, 90px); margin-top: 3rem; align-items: start; }
-.at-policy li { display: flex; justify-content: space-between; gap: 20px; padding: 16px 0; border-bottom: 1px solid rgba(232, 196, 106, 0.22); }
-.at-policy li:first-child { border-top: 1px solid rgba(232, 196, 106, 0.22); }
-.at-policy strong { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.15rem; color: var(--gold-light); }
+.at-policy li { display: flex; justify-content: space-between; gap: 20px; padding: 18px 0; border-bottom: 1px solid rgba(240, 212, 137, 0.3); }
+.at-policy li:first-child { border-top: 1px solid rgba(240, 212, 137, 0.3); }
+.at-policy strong { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.2rem; color: var(--gold-light); }
 .at-policy span { color: var(--muted-light); text-align: right; }
-.at-book-cta { display: flex; flex-direction: column; gap: 14px; padding: 34px; border-radius: 26px; border: 1px solid rgba(232, 196, 106, 0.4); background: linear-gradient(160deg, rgba(122, 31, 209, 0.28), rgba(75, 18, 135, 0.1)); }
-.at-book-cta h3 { font-family: 'Great Vibes', cursive; font-weight: 400; font-size: 2.6rem; color: var(--gold-light); line-height: 1.1; }
-.at-book-cta p { color: var(--muted-light); }
-.at-book-cta .at-cta-row { justify-content: flex-start; margin-top: 0.6rem; }
-.at-book-cta address { color: var(--cream); margin-top: 0.4rem; }
-.at-book-cta address span { color: var(--muted-light); display: block; }
+.at-book-cta { display: flex; flex-direction: column; gap: 12px; padding: 38px; border-radius: 34px; background: var(--pearl); color: var(--text); box-shadow: 0 34px 70px rgba(12, 4, 24, 0.4); }
+.at-book-cta h3 { font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 2.4rem; line-height: 1.1; color: var(--purple); }
+.at-book-cta p { color: var(--muted); }
+.at-book-cta address { margin-top: 0.2rem; color: var(--plum); font-weight: 500; }
+.at-book-cta address span { display: block; color: var(--muted); font-weight: 400; }
+.at-book-cta .at-cta-row { justify-content: flex-start; margin-top: 0.8rem; }
+.at-book-cta .at-btn-ghost { color: var(--plum); border-color: rgba(122, 31, 209, 0.4); background: transparent; }
+.at-book-cta .at-btn-ghost:hover { background: rgba(122, 31, 209, 0.08); }
 
 .at-contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 3rem; }
 .at-contact-item {
-  display: flex; flex-direction: column; gap: 6px; padding: 26px 28px; border-radius: 22px; background: #fff;
-  border: 1px solid rgba(201, 150, 46, 0.4);
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease;
+  display: flex; flex-direction: column; gap: 6px; padding: 28px; border-radius: 26px; background: var(--lilac);
+  border: 1px solid rgba(122, 31, 209, 0.14);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), background 300ms ease, border-color 300ms ease;
 }
-.at-contact-item:hover { transform: translateY(-4px); border-color: var(--purple); }
-.at-contact-item h3 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.15rem; color: var(--purple); }
+.at-contact-item:nth-child(3n + 2) { border-radius: 26px 26px 26px 70px; }
+.at-contact-item:hover { transform: translateY(-5px); background: #fff; border-color: var(--purple); }
+.at-contact-item h3 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.25rem; color: var(--purple); }
 .at-contact-item span, .at-contact-item address { color: var(--text); font-size: 1.02rem; overflow-wrap: anywhere; }
 
-.at-footer { border-top: 1px solid rgba(201, 150, 46, 0.5); padding: 38px clamp(20px, 5vw, 64px) 46px; background: var(--cream); }
-.at-footer-in { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 32px; color: var(--muted); font-size: 0.92rem; }
+.at-footer { background: var(--plum); color: var(--muted-light); padding: 40px clamp(20px, 5vw, 64px) 48px; }
+.at-footer-in { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 32px; font-size: 0.92rem; }
 .at-footer-links { display: flex; flex-wrap: wrap; gap: 8px 24px; }
-.at-footer-links a:hover { color: var(--purple); }
+.at-footer-links a:hover { color: var(--gold-light); }
 
 @media (max-width: 900px) {
-  .at-about, .at-book-grid { grid-template-columns: 1fr; }
-  .at-menu { grid-template-columns: 1fr; }
-  .at-span-2 .at-items { columns: 1; }
-  .at-why { grid-template-columns: 1fr; }
-  .at-why-card, .at-why-card:nth-child(n) { grid-column: auto; }
+  .at-about, .at-book-grid, .at-why { grid-template-columns: 1fr; }
+  .at-why-head { position: static; }
+  .at-items.two { columns: 1; }
   .at-contact-grid { grid-template-columns: 1fr; }
+  .at-contact-item:nth-child(n) { border-radius: 26px; }
   .at-gallery-box { height: 480px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .at *, .at *::before { transition-duration: 0.01ms !important; }
+  .at-strip-track { animation: none; }
 }
 `
-
-function Crown() {
-  return (
-    <svg className="at-crown" viewBox="0 0 120 80" aria-hidden="true">
-      <defs>
-        <linearGradient id="at-crown-grad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={GOLD_LIGHT} />
-          <stop offset="100%" stopColor={GOLD} />
-        </linearGradient>
-      </defs>
-      <path d="M12 62 L6 18 L38 42 L60 8 L82 42 L114 18 L108 62 Z" fill="none" stroke="url(#at-crown-grad)" strokeWidth="4" strokeLinejoin="round" />
-      <rect x="12" y="62" width="96" height="10" rx="3" fill="url(#at-crown-grad)" />
-    </svg>
-  )
-}
 
 function Sparkle({ style, size = 26, delay = 0 }) {
   return (
@@ -863,7 +902,7 @@ function Sparkle({ style, size = 26, delay = 0 }) {
       style={{ ...style, width: size, height: size }}
       viewBox="0 0 24 24"
       aria-hidden="true"
-      animate={{ opacity: [0.25, 1, 0.25], scale: [0.85, 1.1, 0.85] }}
+      animate={{ opacity: [0.2, 1, 0.2], scale: [0.85, 1.1, 0.85] }}
       transition={{ duration: 3.2, repeat: Infinity, delay, ease: 'easeInOut' }}
     >
       <path d="M12 0 L14.4 9.6 L24 12 L14.4 14.4 L12 24 L9.6 14.4 L0 12 L9.6 9.6 Z" fill="currentColor" />
@@ -871,91 +910,60 @@ function Sparkle({ style, size = 26, delay = 0 }) {
   )
 }
 
-function MenuGroup({ title, items, wide }) {
-  return (
-    <div className={wide ? 'at-group at-span-2' : 'at-group'}>
-      <h3>{title}</h3>
-      <ul className="at-items">
-        {items.map(item => (
-          <li className="at-item" key={item.name}>
-            <div className="at-item-main">
-              <span className="at-item-name">{item.name}</span>
-              {item.desc && <span className="at-item-desc">{item.desc}</span>}
-            </div>
-            <span className="at-item-price">{item.price}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
 function Hero() {
+  const { scrollY } = useScroll()
+  const orbY = useTransform(scrollY, [0, 800], [0, 160])
   return (
     <section className="at-hero">
-      <div className="at-ring" aria-hidden="true">
-        <svg viewBox="0 0 400 400">
-          <defs>
-            <linearGradient id="at-ring-top" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor={PURPLE} />
-              <stop offset="70%" stopColor={PURPLE} />
-              <stop offset="100%" stopColor={GOLD_LIGHT} />
-            </linearGradient>
-            <linearGradient id="at-ring-bottom" x1="1" y1="0" x2="0" y2="0">
-              <stop offset="0%" stopColor={PURPLE} />
-              <stop offset="70%" stopColor={PURPLE} />
-              <stop offset="100%" stopColor={GOLD_LIGHT} />
-            </linearGradient>
-          </defs>
-          <motion.path
-            d="M 60 130 A 190 190 0 0 1 340 110"
-            stroke="url(#at-ring-top)"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
-          />
-          <motion.path
-            d="M 340 290 A 190 190 0 0 1 60 270"
-            stroke="url(#at-ring-bottom)"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          />
-        </svg>
-      </div>
-      <Sparkle style={{ top: '26%', right: '14%' }} size={30} />
-      <Sparkle style={{ top: '46%', right: '9%' }} size={20} delay={1} />
-      <Sparkle style={{ top: '62%', right: '16%' }} size={26} delay={2} />
-      <Sparkle style={{ top: '34%', left: '12%' }} size={22} delay={1.5} />
+      <motion.div className="at-orb a" style={{ y: orbY }} aria-hidden="true" />
+      <motion.div className="at-orb b" style={{ y: orbY }} aria-hidden="true" />
+      <div className="at-orb c" aria-hidden="true" />
+      <Sparkle style={{ top: '24%', right: '13%' }} size={30} />
+      <Sparkle style={{ top: '44%', right: '8%' }} size={20} delay={1} />
+      <Sparkle style={{ top: '58%', left: '9%' }} size={26} delay={2} />
+      <Sparkle style={{ top: '30%', left: '11%' }} size={22} delay={1.5} />
 
       <div className="at-hero-inner">
-        <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}>
-          <Crown />
-        </motion.div>
-        <motion.h1
-          className="at-mark"
-          aria-label="R&R Atelier"
-          initial={{ opacity: 0, y: 34, filter: 'blur(12px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <span>R</span>
-          <span className="amp">&amp;</span>
-          <span>R</span>
-        </motion.h1>
-        <motion.div className="at-name" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 0.8 }}>
-          ATELIER
-        </motion.div>
-        <motion.p className="at-tagline" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.8 }}>
+        <h1 className="at-wordmark" aria-label="R&R Atelier">
+          <motion.span className="at-wm-small" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
+            R&amp;R
+          </motion.span>
+          <motion.span
+            className="at-wm-big"
+            initial={{ opacity: 0, y: 34, filter: 'blur(14px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1.3, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Atelier
+          </motion.span>
+        </h1>
+        <motion.p className="at-tagline" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.8 }}>
           Your Beauty, Our Craft.
         </motion.p>
-        <motion.p className="at-lede" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4, duration: 0.8 }}>
+        <motion.p className="at-lede" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3, duration: 0.8 }}>
           A nail studio in uMhlanga offering gel sets, acrylic overlays, manicures, pedicures and nail art.
         </motion.p>
-        <motion.div className="at-cta-row" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.6, duration: 0.8 }}>
-          <a href="#book" className="at-btn at-btn-purple">Book an appointment</a>
-          <a href="#menu" className="at-btn at-btn-line">View the menu</a>
+        <motion.div className="at-cta-row" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5, duration: 0.8 }}>
+          <a href="#book" className="at-btn at-btn-gold">Book an appointment</a>
+          <a href="#menu" className="at-btn at-btn-ghost">View the menu</a>
         </motion.div>
+        <div className="at-nails" aria-hidden="true">
+          {swatches.map((s, i) => (
+            <motion.div
+              className="at-nail-wrap"
+              key={s.cls}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: [0, -10, 0] }}
+              transition={{
+                opacity: { delay: 1.7 + i * 0.1, duration: 0.6 },
+                y: { delay: 1.7 + i * 0.1, duration: 4 + i * 0.4, repeat: Infinity, ease: 'easeInOut' },
+              }}
+            >
+              <div className={`at-nail ${s.cls}`} />
+              <span className="at-nail-label">{s.label}</span>
+            </motion.div>
+          ))}
+        </div>
       </div>
       <motion.div className="at-scroll" animate={{ y: [0, 10, 0] }} transition={{ duration: 1.8, repeat: Infinity }}>
         scroll ↓
@@ -964,68 +972,128 @@ function Hero() {
   )
 }
 
-function About() {
+function Strip() {
+  const row = [...ticker, ...ticker]
   return (
-    <section className="at-section">
-      <div className="at-about">
-        <div className="at-about-copy">
-          <h2 className="at-h2">Nails done with care, in the heart of uMhlanga</h2>
-          <span className="at-rule" />
-          <p>
-            R&amp;R Atelier is the nail studio from R&amp;R Agencies. You will find us at Shop 7, The Quartz, inside Bivash Hair and Beauty.
-          </p>
-          <p>
-            Choose from gel sets, acrylic overlays, manicures, pedicures and nail art. Every appointment starts with freshly sanitised equipment.
-          </p>
-        </div>
-        <div className="at-hours">
-          <h3>Trading hours</h3>
-          <ul>
-            {hours.map(h => (
-              <li key={h.day}>
-                <span>{h.day}</span>
-                <span>{h.time}</span>
-              </li>
+    <div className="at-strip" aria-hidden="true">
+      <div className="at-strip-track">
+        {[0, 1].map(k => (
+          <div className="at-strip-item" key={k}>
+            {row.map((t, i) => (
+              <span key={`${k}-${i}`} style={{ display: 'contents' }}>
+                <span>{t}</span>
+                <i>✦</i>
+              </span>
             ))}
-          </ul>
-        </div>
+          </div>
+        ))}
       </div>
-    </section>
+    </div>
   )
 }
 
-function Menu() {
+function About() {
   return (
-    <div className="at-menu-wrap" id="menu">
+    <div className="at-about-wrap">
       <section className="at-section">
-        <h2 className="at-h2">The menu</h2>
-        <span className="at-rule" />
-        <div className="at-menu">
-          <MenuGroup title="Nail Services" items={nailServices} wide />
-          <MenuGroup title="Manicures" items={manicures} />
-          <MenuGroup title="Pedicures" items={pedicures} />
-          <MenuGroup title="Combos" items={combos} />
-          <MenuGroup title="Add-Ons" items={addOns} />
+        <div className="at-about">
+          <div className="at-about-copy">
+            <h2 className="at-h2">Nails done with care, in the heart of uMhlanga</h2>
+            <span className="at-rule" />
+            <p>
+              R&amp;R Atelier is the nail studio from R&amp;R Agencies. You will find us at Shop 7, The Quartz, inside Bivash Hair and Beauty.
+            </p>
+            <p>
+              Choose from gel sets, acrylic overlays, manicures, pedicures and nail art. Every appointment starts with freshly sanitised equipment.
+            </p>
+          </div>
+          <div className="at-hours">
+            <h3>Trading hours</h3>
+            <ul>
+              {hours.map(h => (
+                <li key={h.day}>
+                  <span>{h.day}</span>
+                  <span>{h.time}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
     </div>
   )
 }
 
-function WhyUs() {
+function Menu() {
+  const [active, setActive] = useState(0)
+  const tab = menuTabs[active]
   return (
-    <section className="at-section">
-      <h2 className="at-h2">Why choose R&amp;R Atelier</h2>
-      <span className="at-rule" />
-      <div className="at-why">
-        {whyUs.map(w => (
-          <div className="at-why-card" key={w.title}>
-            <h3>{w.title}</h3>
-            <p>{w.desc}</p>
-          </div>
+    <section className="at-section" id="menu">
+      <div className="at-menu-head">
+        <div>
+          <h2 className="at-h2">The menu</h2>
+          <span className="at-rule" />
+        </div>
+      </div>
+      <div className="at-tabs" role="tablist">
+        {menuTabs.map((t, i) => (
+          <button key={t.id} role="tab" aria-selected={i === active} className="at-tab" onClick={() => setActive(i)}>
+            {t.label}
+          </button>
         ))}
       </div>
+      <div className="at-menu-panel">
+        <AnimatePresence mode="wait">
+          <motion.ul
+            key={tab.id}
+            className={tab.items.length > 6 ? 'at-items two' : 'at-items'}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {tab.items.map(item => (
+              <li className="at-item" key={item.name}>
+                <div className="at-item-main">
+                  <span className="at-item-name">{item.name}</span>
+                  {item.desc && <span className="at-item-desc">{item.desc}</span>}
+                </div>
+                <span className="at-item-dots" />
+                <span className="at-item-price">{item.price}</span>
+              </li>
+            ))}
+          </motion.ul>
+        </AnimatePresence>
+      </div>
     </section>
+  )
+}
+
+function WhyUs() {
+  return (
+    <div className="at-why-wrap">
+      <section className="at-section">
+        <div className="at-why">
+          <div className="at-why-head">
+            <h2 className="at-h2">Why choose R&amp;R Atelier</h2>
+            <span className="at-rule" />
+          </div>
+          <div className="at-why-list">
+            {whyUs.map(w => (
+              <div className="at-why-row" key={w.title}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 0 L14.4 9.6 L24 12 L14.4 14.4 L12 24 L9.6 14.4 L0 12 L9.6 9.6 Z" fill="currentColor" />
+                </svg>
+                <div>
+                  <h3>{w.title}</h3>
+                  <p>{w.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
   )
 }
 
@@ -1055,7 +1123,7 @@ function Gallery() {
 
 function Book() {
   return (
-    <div className="at-dark" id="book" style={{ borderTop: '1px solid rgba(232, 196, 106, 0.25)' }}>
+    <div className="at-book-wrap" id="book">
       <section className="at-section">
         <h2 className="at-h2">Book your appointment</h2>
         <span className="at-rule" />
@@ -1077,7 +1145,7 @@ function Book() {
               <span>Inside Bivash Hair and Beauty</span>
             </address>
             <div className="at-cta-row">
-              <a href="tel:0813365266" className="at-btn at-btn-gold">Call 081 336 5266</a>
+              <a href="tel:0813365266" className="at-btn at-btn-purple">Call 081 336 5266</a>
               <a href="https://wa.me/27813365266" target="_blank" rel="noreferrer" className="at-btn at-btn-ghost">WhatsApp us</a>
             </div>
           </div>
@@ -1138,6 +1206,7 @@ export default function Atelier() {
 
       <main>
         <Hero />
+        <Strip />
         <About />
         <Menu />
         <WhyUs />
