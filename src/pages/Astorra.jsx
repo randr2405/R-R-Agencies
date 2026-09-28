@@ -312,18 +312,31 @@ const STYLES = `
 .as-acc-body { overflow: hidden; }
 .as-acc-body p { padding: 0 4px 28px; max-width: 46rem; color: var(--muted); font-weight: 300; font-size: 1.05rem; }
 
-.as-outro { text-align: center; padding: 120px 24px 140px; }
-.as-outro h2 { font-size: clamp(1.6rem, 3.6vw, 2.6rem); font-weight: 300; }
-.as-outro p { margin-top: 1rem; color: var(--muted); font-weight: 300; font-size: 1.1rem; }
-.as-outro a { display: inline-block; margin-top: 1.6rem; padding: 14px 28px; border-radius: 999px; border: 1px solid var(--cyan); transition: background 250ms ease, transform 250ms ease; }
-.as-outro a:hover { background: rgba(34, 217, 230, 0.16); transform: translateY(-3px); }
+.as-contact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 3rem; max-width: 820px; }
+.as-contact-item {
+  padding: 26px 28px; border-radius: 24px; background: var(--glass); backdrop-filter: blur(18px);
+  border: 1px solid var(--line); transition: border-color 300ms ease, transform 300ms ease;
+}
+.as-contact-item:hover { border-color: rgba(34, 217, 230, 0.6); transform: translateY(-3px); }
+.as-contact-item h3 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--cyan); margin-bottom: 0.5rem; }
+.as-contact-item p, .as-contact-item a { font-weight: 300; font-size: 1.05rem; color: #fff; font-style: normal; }
+.as-contact-item address { font-style: normal; font-weight: 300; font-size: 1.05rem; line-height: 1.6; }
+.as-contact-item a:hover { color: var(--cyan); }
+
+.as-footer { border-top: 1px solid var(--line); padding: 40px clamp(20px, 5vw, 64px) 48px; }
+.as-footer-in { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px 32px; color: var(--muted); font-weight: 300; font-size: 0.92rem; }
+.as-footer-links { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.as-footer-links a:hover { color: var(--cyan); }
 
 @media (max-width: 900px) {
   .as-how, .as-build { grid-template-columns: 1fr; }
   .as-how-head, .as-panel { position: static; }
   .as-price { grid-template-columns: 1fr 1fr; }
 }
-@media (max-width: 560px) { .as-price { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .as-price { grid-template-columns: 1fr; }
+  .as-contact-grid { grid-template-columns: 1fr; }
+}
 @media (prefers-reduced-motion: reduce) { .as *, .as *::before { transition-duration: 0.01ms !important; } }
 `
 
@@ -477,6 +490,48 @@ function Compare() {
   )
 }
 
+function Contact() {
+  return (
+    <section className="as-section" id="contact">
+      <Reveal>
+        <h2 className="as-h2">Get in <b>touch</b></h2>
+        <p className="as-sub">Astorra is owned and operated by R&R Agencies.</p>
+      </Reveal>
+      <div className="as-contact-grid">
+        <div className="as-contact-item">
+          <h3>Phone</h3>
+          <a href="tel:0813365266">081 336 5266</a>
+        </div>
+        <div className="as-contact-item">
+          <h3>Email</h3>
+          <a href="mailto:info@rragencies.co.za">info@rragencies.co.za</a>
+        </div>
+        <div className="as-contact-item">
+          <h3>Support</h3>
+          <p>Available 24/7</p>
+        </div>
+        <div className="as-contact-item">
+          <h3>Location</h3>
+          <address>
+            SBDC Building<br />
+            2 Columbus Rd, Verulam<br />
+            Unit 13<br />
+            KwaZulu-Natal, South Africa
+          </address>
+        </div>
+        <div className="as-contact-item">
+          <h3>Website</h3>
+          <a href="https://www.astorra.co.za" target="_blank" rel="noopener noreferrer">www.astorra.co.za</a>
+        </div>
+        <div className="as-contact-item">
+          <h3>Get started</h3>
+          <a href="https://www.astorra.co.za/auth" target="_blank" rel="noopener noreferrer">Sign up or log in</a>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function Astorra() {
   const [picked, setPicked] = useState([])
   const { scrollYProgress } = useScroll()
@@ -504,7 +559,7 @@ export default function Astorra() {
             <motion.p className="as-lede" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.8 }}>
               Businesses don't buy software — they buy relief from disconnected, manual, wasted-time operations. Astorra brings everything together in one intelligent, modular platform that adapts to the way each business works.
             </motion.p>
-            <motion.a href="#build" className="as-btn" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.8 }}>
+            <motion.a href="https://www.astorra.co.za/auth" target="_blank" rel="noopener noreferrer" className="as-btn" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.8 }}>
               Build your workspace
             </motion.a>
           </div>
@@ -541,15 +596,19 @@ export default function Astorra() {
         <Builder picked={picked} setPicked={setPicked} />
         <Pricing picked={picked} />
         <Compare />
-
-        <section className="as-outro">
-          <Reveal>
-            <h2>Astorra is owned and operated by R&R Agencies.</h2>
-            <p>081 336 5266 · info@rragencies.co.za</p>
-            <a href="mailto:info@rragencies.co.za">Get in touch</a>
-          </Reveal>
-        </section>
+        <Contact />
       </main>
+
+      <footer className="as-footer">
+        <div className="as-footer-in">
+          <span>© 2026 R&R Agencies (trading as Astorra). All rights reserved.</span>
+          <div className="as-footer-links">
+            <a href="https://www.astorra.co.za" target="_blank" rel="noopener noreferrer">www.astorra.co.za</a>
+            <a href="https://www.astorra.co.za/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            <a href="https://www.astorra.co.za/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
