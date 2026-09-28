@@ -6,14 +6,14 @@ const divisions = [
   { name: 'R&R Agencies', short: 'Branding & Custom', path: '/agencies', logo: '/logos/agencies.png', color: '#FF4D8D' },
   { name: 'Site Solutions', short: 'Web, App & Software', path: '/site-solutions', logo: '/logos/site-solutions.png', color: '#4DA6FF' },
   { name: 'Astorra', short: 'Business Software', path: '/astorra', logo: '/logos/astorra.png', color: '#7B61FF' },
-  { name: 'R&R Atelier', short: 'Nails', path: '/atelier', logo: '/logos/atelier.png', color: '#FF9F4D' },
+  { name: 'R&R Atelier', short: 'Nails', path: '/atelier', logo: '/logos/atelier.png', color: '#B36BFF' },
   { name: 'Sports & Lifestyle', short: 'Clothing Brand', path: '/sports-lifestyle', logo: '/logos/sports-lifestyle.png', color: '#4DFFB0' },
 ]
 
 const BACKGROUND = '#07070d'
 
 const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
 
 .hub-root {
   position: relative;
@@ -66,17 +66,27 @@ const STYLES = `
   user-select: none;
   position: absolute;
   z-index: 5;
-  font-family: 'Great Vibes', 'Snell Roundhand', 'Apple Chancery', cursive;
+  font-family: 'Pinyon Script', 'Snell Roundhand', 'Apple Chancery', cursive;
   font-weight: 400;
-  font-size: clamp(2.8rem, 6.5vw, 5.5rem);
-  line-height: 1.1;
-  letter-spacing: 0.02em;
-  text-shadow: 0 2px 28px rgba(255, 255, 255, 0.14);
+  font-size: clamp(2.6rem, min(5.5vw, 10vh), 4.6rem);
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
   margin: 0;
-  left: 6vw;
+  left: 5vw;
   top: 50%;
-  max-width: 34vw;
+  max-width: max(9rem, calc(50vw - 34vh - 7vw));
   transform: translate(0, -50%);
+}
+
+.face-title::after {
+  content: '';
+  display: block;
+  width: 3.5rem;
+  height: 1px;
+  margin-top: 0.9rem;
+  background: currentColor;
+  opacity: 0.6;
 }
 
 .face-title.active {
@@ -149,6 +159,11 @@ const STYLES = `
     text-align: center;
     font-size: 2.8rem;
     transform: translate(-50%, 0);
+  }
+
+  .face-title::after {
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .hub-hint {
