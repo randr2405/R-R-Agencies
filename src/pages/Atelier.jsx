@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion'
+import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl'
+import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform, Triangle } from 'ogl'
 
 const ORCHID = '#a66bff'
 const PURPLE = '#7a1fd1'
@@ -132,6 +132,195 @@ function autoBind(instance) {
       instance[key] = instance[key].bind(instance)
     }
   })
+}
+
+const BALATRO_VERTEX = `
+attribute vec2 uv;
+attribute vec2 position;
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position, 0.0, 1.0);
+}
+`
+
+const BALATRO_FRAGMENT = `
+precision highp float;
+
+uniform float iTime;
+uniform vec3 iResolution;
+uniform float uSpinRotation;
+uniform float uSpinSpeed;
+uniform vec2 uOffset;
+uniform vec4 uColor1;
+uniform vec4 uColor2;
+uniform vec4 uColor3;
+uniform float uContrast;
+uniform float uLighting;
+uniform float uSpinAmount;
+uniform float uPixelFilter;
+uniform float uSpinEase;
+uniform float uIsRotate;
+uniform vec2 uMouse;
+
+varying vec2 vUv;
+
+vec4 effect(vec2 screenSize, vec2 screen_coords) {
+  float pixel_size = length(screenSize.xy) / uPixelFilter;
+  vec2 uv = (floor(screen_coords.xy * (1.0 / pixel_size)) * pixel_size - 0.5 * screenSize.xy) / length(screenSize.xy) - uOffset;
+  float uv_len = length(uv);
+
+  float speed = (uSpinRotation * uSpinEase * 0.2);
+  if (uIsRotate > 0.5) {
+    speed = iTime * speed;
+  }
+  speed += 302.2;
+
+  float mouseInfluence = (uMouse.x - 0.5) + (uMouse.y - 0.5);
+
+  float new_pixel_angle = atan(uv.y, uv.x) + speed - uSpinEase * 20.0 * (uSpinAmount * uv_len + (1.0 - uSpinAmount));
+  vec2 mid = (screenSize.xy / length(screenSize.xy)) / 2.0;
+  uv = (vec2(uv_len * cos(new_pixel_angle) + mid.x, uv_len * sin(new_pixel_angle) + mid.y) - mid);
+
+  uv *= 30.0;
+  float baseSpeed = iTime * uSpinSpeed;
+  speed = baseSpeed + mouseInfluence * 2.0;
+
+  vec2 uv2 = vec2(uv.x + uv.y);
+
+  for (int i = 0; i < 5; i++) {
+    uv2 += sin(max(uv.x, uv.y)) + uv;
+    uv += 0.5 * vec2(cos(5.1123314 + 0.353 * uv2.y + speed * 0.131121), sin(uv2.x - 0.113 * speed));
+    uv -= 1.0 * cos(uv.x + uv.y) - 1.0 * sin(uv.x * 0.711 - uv.y);
+  }
+
+  float contrast_mod = (0.25 * uContrast + 0.5 * uSpinAmount + 1.2);
+  float paint_res = min(2.0, max(0.0, length(uv) * 0.035 * contrast_mod));
+  float c1p = max(0.0, 1.0 - contrast_mod * abs(1.0 - paint_res));
+  float c2p = max(0.0, 1.0 - contrast_mod * abs(paint_res));
+  float c3p = 1.0 - min(1.0, c1p + c2p);
+  float light = (uLighting - 0.2) * max(c1p * 5.0 - 4.0, 0.0) + uLighting * max(c2p * 5.0 - 4.0, 0.0);
+
+  return (0.3 / uContrast) * uColor1 + (1.0 - 0.3 / uContrast) * (uColor1 * c1p + uColor2 * c2p + vec4(c3p * uColor3.rgb, c3p * uColor1.a)) + light;
+}
+
+void main() {
+  vec2 uv = vUv * iResolution.xy;
+  gl_FragColor = effect(iResolution.xy, uv);
+}
+`
+
+function hexToVec4(hex) {
+  let h = hex.replace('#', '')
+  let a = 1
+  if (h.length === 3) {
+    h = h.split('').map(c => c + c).join('')
+  }
+  if (h.length === 8) {
+    a = parseInt(h.slice(6, 8), 16) / 255
+    h = h.slice(0, 6)
+  }
+  const r = parseInt(h.slice(0, 2), 16) / 255
+  const g = parseInt(h.slice(2, 4), 16) / 255
+  const b = parseInt(h.slice(4, 6), 16) / 255
+  return [r, g, b, a]
+}
+
+function Balatro({
+  spinRotation = -2.0,
+  spinSpeed = 7.0,
+  offset = [0.0, 0.0],
+  color1 = '#DE443B',
+  color2 = '#006BB4',
+  color3 = '#162325',
+  contrast = 3.5,
+  lighting = 0.4,
+  spinAmount = 0.25,
+  pixelFilter = 745,
+  spinEase = 1.0,
+  isRotate = false,
+  mouseInteraction = true,
+}) {
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return undefined
+
+    const renderer = new Renderer({ alpha: true })
+    const gl = renderer.gl
+    gl.clearColor(0, 0, 0, 0)
+
+    const mouse = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 }
+    let program
+    let raf = 0
+
+    const resize = () => {
+      const w = container.clientWidth || 1
+      const h = container.clientHeight || 1
+      renderer.setSize(w, h)
+      if (program) {
+        program.uniforms.iResolution.value = [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height]
+      }
+    }
+    window.addEventListener('resize', resize)
+    resize()
+
+    const geometry = new Triangle(gl)
+    program = new Program(gl, {
+      vertex: BALATRO_VERTEX,
+      fragment: BALATRO_FRAGMENT,
+      uniforms: {
+        iTime: { value: 0 },
+        iResolution: { value: [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height] },
+        uSpinRotation: { value: spinRotation },
+        uSpinSpeed: { value: spinSpeed },
+        uOffset: { value: offset },
+        uColor1: { value: hexToVec4(color1) },
+        uColor2: { value: hexToVec4(color2) },
+        uColor3: { value: hexToVec4(color3) },
+        uContrast: { value: contrast },
+        uLighting: { value: lighting },
+        uSpinAmount: { value: spinAmount },
+        uPixelFilter: { value: pixelFilter },
+        uSpinEase: { value: spinEase },
+        uIsRotate: { value: isRotate ? 1 : 0 },
+        uMouse: { value: [0.5, 0.5] },
+      },
+    })
+
+    const mesh = new Mesh(gl, { geometry, program })
+
+    const update = t => {
+      raf = requestAnimationFrame(update)
+      program.uniforms.iTime.value = t * 0.001
+      mouse.x = lerp(mouse.x, mouse.tx, 0.06)
+      mouse.y = lerp(mouse.y, mouse.ty, 0.06)
+      program.uniforms.uMouse.value = [mouse.x, mouse.y]
+      renderer.render({ scene: mesh })
+    }
+    raf = requestAnimationFrame(update)
+    container.appendChild(gl.canvas)
+
+    const handleMouseMove = e => {
+      const rect = container.getBoundingClientRect()
+      if (!rect.width || !rect.height) return
+      mouse.tx = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width))
+      mouse.ty = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top) / rect.height))
+    }
+    if (mouseInteraction) window.addEventListener('mousemove', handleMouseMove)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', resize)
+      if (mouseInteraction) window.removeEventListener('mousemove', handleMouseMove)
+      if (gl.canvas.parentNode === container) container.removeChild(gl.canvas)
+      const ext = gl.getExtension('WEBGL_lose_context')
+      if (ext) ext.loseContext()
+    }
+  }, [spinRotation, spinSpeed, offset, color1, color2, color3, contrast, lighting, spinAmount, pixelFilter, spinEase, isRotate, mouseInteraction])
+
+  return <div ref={containerRef} className="balatro-container" />
 }
 
 const DEFAULT_FONT = 'bold 30px Figtree'
@@ -721,12 +910,20 @@ const STYLES = `
 .at-hero {
   position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center;
   padding: 120px 24px 110px; overflow: hidden; isolation: isolate; color: #fff;
-  background: linear-gradient(180deg, #12061f 0%, var(--plum) 55%, #24103f 100%);
+  background: #12061f;
 }
-.at-orb { position: absolute; border-radius: 50%; filter: blur(70px); z-index: -1; pointer-events: none; }
-.at-orb.a { width: 46vw; height: 46vw; left: -12vw; top: -10vw; background: radial-gradient(circle, rgba(122, 31, 209, 0.75), transparent 68%); }
-.at-orb.b { width: 40vw; height: 40vw; right: -10vw; top: 18vh; background: radial-gradient(circle, rgba(166, 107, 255, 0.45), transparent 68%); }
-.at-orb.c { width: 34vw; height: 34vw; left: 30vw; bottom: -16vw; background: radial-gradient(circle, rgba(201, 150, 46, 0.4), transparent 68%); }
+.balatro-container {
+  width: 100%;
+  height: 100%;
+}
+.at-hero-bg { position: absolute; inset: 0; z-index: -2; overflow: hidden; }
+.at-hero-bg canvas { display: block; width: 100%; height: 100%; }
+.at-hero-shade {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(18, 6, 31, 0.55) 0%, rgba(18, 6, 31, 0.15) 60%, rgba(18, 6, 31, 0.5) 100%),
+    linear-gradient(180deg, rgba(18, 6, 31, 0.35) 0%, rgba(26, 11, 46, 0.1) 45%, rgba(18, 6, 31, 0.75) 100%);
+}
 .at-hero-inner { width: min(980px, 100%); display: flex; flex-direction: column; align-items: center; }
 
 .at-wordmark { display: flex; flex-direction: column; align-items: center; line-height: 1; }
@@ -911,13 +1108,19 @@ function Sparkle({ style, size = 26, delay = 0 }) {
 }
 
 function Hero() {
-  const { scrollY } = useScroll()
-  const orbY = useTransform(scrollY, [0, 800], [0, 160])
   return (
     <section className="at-hero">
-      <motion.div className="at-orb a" style={{ y: orbY }} aria-hidden="true" />
-      <motion.div className="at-orb b" style={{ y: orbY }} aria-hidden="true" />
-      <div className="at-orb c" aria-hidden="true" />
+      <div className="at-hero-bg" aria-hidden="true">
+        <Balatro
+          isRotate={false}
+          mouseInteraction
+          pixelFilter={745}
+          color1={PURPLE}
+          color2={GOLD}
+          color3="#12061f"
+        />
+      </div>
+      <div className="at-hero-shade" aria-hidden="true" />
       <Sparkle style={{ top: '24%', right: '13%' }} size={30} />
       <Sparkle style={{ top: '44%', right: '8%' }} size={20} delay={1} />
       <Sparkle style={{ top: '58%', left: '9%' }} size={26} delay={2} />
