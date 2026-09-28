@@ -1984,22 +1984,23 @@ export default function Agencies() {
           shapes="mixed"
           cellSize={12}
           dotSize={0.7}
-          color="#3a3220"
-          hoverColor={GOLD}
+          color="#6e5a26"
+          hoverColor={GOLD_LIGHT}
           backgroundColor={GALLERY_BACKGROUND}
           speed={1}
           scale={1.2}
-          contrast={1}
-          brightness={0.35}
+          contrast={1.2}
+          brightness={0.5}
           flow={0}
           direction={0}
-          fade={0.3}
+          fade={0.2}
           interactive
           splashRadius={50}
           splashStrength={0.4}
           glow={0.3}
           intro
           introDuration={1.8}
+          onError={e => console.error('ShapeWaves failed:', e)}
         />
       </div>
 
