@@ -414,15 +414,15 @@ const STYLES = `
 .ss-btn-ghost-light { color: #fff; border-color: rgba(255, 255, 255, 0.5); background: rgba(10, 26, 60, 0.4); }
 .ss-btn-ghost-light:hover { background: rgba(255, 255, 255, 0.14); }
 
-.ss-stage { position: relative; justify-self: center; width: 100%; max-width: 400px; padding-bottom: 60px; }
+.ss-stage { position: relative; justify-self: center; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
 .ss-logo-card {
-  position: relative; width: 78%; margin: 0 auto 0 0; padding: 16px; border-radius: 26px; background: #fff;
+  position: relative; width: 62%; padding: 14px; border-radius: 26px; background: #fff;
   border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 30px 80px rgba(3, 10, 30, 0.55);
 }
 .ss-logo-card::before { content: ''; position: absolute; inset: -12px; z-index: -1; border-radius: 34px; border: 1px dashed rgba(143, 211, 244, 0.6); }
 .ss-logo-card img { display: block; width: 100%; height: auto; }
 .ss-term {
-  position: absolute; right: 0; bottom: 0; width: 84%; border-radius: 16px; overflow: hidden;
+  position: relative; width: 100%; border-radius: 16px; overflow: hidden;
   background: rgba(6, 14, 36, 0.92); backdrop-filter: blur(14px);
   border: 1px solid rgba(143, 211, 244, 0.4); box-shadow: 0 24px 60px rgba(3, 10, 30, 0.6), 0 0 40px rgba(45, 168, 224, 0.2);
 }
@@ -607,7 +607,7 @@ a.ss-contact-item:hover { transform: translateY(-5px); border-color: var(--sky-l
 
 @media (max-width: 900px) {
   .ss-hero-grid, .ss-host { grid-template-columns: 1fr; }
-  .ss-stage { justify-self: start; max-width: 340px; }
+  .ss-stage { justify-self: center; max-width: 380px; }
   .ss-host-head { position: static; }
   .ss-stats-in { grid-template-columns: 1fr 1fr; }
   .ss-stat:nth-child(2) { border-right: 0; }
