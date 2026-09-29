@@ -501,17 +501,18 @@ const STYLES = `
 .sl-stack-card .sl-btn:hover { background: currentColor; }
 .sl-stack-card .sl-btn:hover span { color: var(--white); mix-blend-mode: difference; }
 
-.sl-duo { display: flex; border: 1px solid var(--black); min-height: 460px; }
-.sl-founder { flex: 1; padding: clamp(24px, 3vw, 40px); transition: flex 700ms cubic-bezier(0.22, 1, 0.36, 1), background 500ms ease, color 500ms ease; overflow: hidden; }
+.sl-lead { max-width: 56ch; margin: 0 auto 3rem; text-align: center; font-size: clamp(1.1rem, 1.8vw, 1.35rem); font-weight: 400; line-height: 1.75; }
+.sl-duo { display: flex; border: 1px solid var(--black); }
+.sl-founder { flex: 1; padding: clamp(32px, 4vw, 56px); font-size: 1.05rem; font-weight: 400; line-height: 1.8; transition: flex 700ms cubic-bezier(0.22, 1, 0.36, 1), background 500ms ease, color 500ms ease; overflow: hidden; }
 .sl-founder + .sl-founder { border-left: 1px solid var(--black); }
 .sl-founder:nth-child(2) { background: var(--black); color: var(--white); }
 .sl-duo:hover .sl-founder { flex: 0.72; }
 .sl-duo .sl-founder:hover { flex: 1.5; }
-.sl-focus { font-size: 0.82rem; letter-spacing: 0.14em; opacity: 0.65; }
+.sl-focus { font-size: 0.85rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7; }
 .sl-founder h3 { margin: 0.6rem 0 0.2rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.15; }
-.sl-role { font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.1rem; }
-.sl-founder p + p { margin-top: 0.9rem; }
-.sl-closing { max-width: 62ch; margin: 2.2rem auto 0; text-align: center; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.1rem; line-height: 1.6; }
+.sl-role { font-size: 0.95rem; opacity: 0.75; margin-bottom: 1.6rem; padding-bottom: 1.2rem; border-bottom: 1px solid currentColor; }
+.sl-founder p + p { margin-top: 1.1rem; }
+.sl-closing { max-width: 44ch; margin: 4rem auto 0; padding-top: 2.4rem; border-top: 1px solid var(--black); text-align: center; font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: clamp(1.35rem, 2.4vw, 1.85rem); line-height: 1.55; }
 
 .sl-group { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1.25rem, 2vw, 1.6rem); margin: 2.4rem 0 1.2rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--black); }
 .sl-group:first-of-type { margin-top: 0; }
@@ -889,7 +890,7 @@ export default function SportsLifestyle() {
         <section className="sl-section">
           <Head title="Where sport meets style" sub="Our story" />
           <Reveal>
-            <p className="sl-prose">
+            <p className="sl-lead">
               R&R Sports & Lifestyle was born from the perfect fusion of athletic excellence and lifestyle sophistication. Two
               founders, two passions, one extraordinary brand.
             </p>
