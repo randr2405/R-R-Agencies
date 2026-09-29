@@ -117,7 +117,7 @@ const STYLES = `
   background: var(--white);
   color: var(--black);
   font-family: 'Jost', system-ui, sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.65;
   overflow-x: clip;
   min-height: 100vh;
@@ -127,20 +127,22 @@ const STYLES = `
 .sl h1, .sl h2, .sl h3, .sl p, .sl ul, .sl address { margin: 0; padding: 0; }
 .sl ul { list-style: none; }
 .sl address { font-style: normal; }
-.sl a { color: inherit; text-decoration: none; }
+:where(.sl) a { color: inherit; text-decoration: none; }
 .sl a:focus-visible, .sl button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+.sl h1, .sl h2, .sl h3, .sl-tagline, .sl-range a, .sl-strip-item, .sl-closing, .sl-faq-btn { font-variation-settings: 'opsz' 28; }
 
 .sl-bar { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 70; transform-origin: 0 50%; background: var(--black); mix-blend-mode: difference; }
 .sl-back {
-  position: fixed; top: 16px; left: 18px; z-index: 60; padding: 8px 16px; font-size: 0.85rem; font-weight: 500;
-  background: var(--black); color: var(--white); border: 1px solid var(--white); outline: 1px solid var(--black);
+  position: fixed; top: 16px; left: 18px; z-index: 60; padding: 8px 16px; font-size: 0.82rem; font-weight: 500;
+  background: var(--black); color: var(--white); border: 1px solid var(--white); box-shadow: 0 0 0 1px var(--black);
   transition: transform 250ms ease;
 }
 .sl-back:hover { transform: translateX(-3px); }
 
 .sl-hero {
   position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center;
-  padding: 100px 24px 90px; overflow: hidden; isolation: isolate;
+  padding: 90px 24px 80px; overflow: hidden; isolation: isolate;
 }
 .sl-hero::before {
   content: ''; position: absolute; inset: 22px; z-index: -1; border: 1px solid var(--black); pointer-events: none;
@@ -149,13 +151,13 @@ const STYLES = `
   content: ''; position: absolute; inset: 30px; z-index: -1; border: 1px solid rgba(0, 0, 0, 0.25); pointer-events: none;
 }
 .sl-hero-inner { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 720px; }
-.sl-logo { width: min(460px, 78vw); height: auto; mix-blend-mode: multiply; }
-.sl-tagline { margin-top: 0.6rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: clamp(1.5rem, 3.6vw, 2.4rem); }
+.sl-logo { width: min(320px, 70vw); height: auto; mix-blend-mode: multiply; }
+.sl-tagline { margin-top: 0.6rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: clamp(1.2rem, 2.4vw, 1.6rem); }
 .sl-lede { margin-top: 0.8rem; max-width: 34rem; color: var(--mid); font-weight: 300; }
 .sl-cta { margin-top: 2rem; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 .sl-btn {
-  display: inline-flex; align-items: center; justify-content: center; padding: 14px 32px; cursor: pointer;
-  font-family: inherit; font-weight: 500; font-size: 0.95rem; letter-spacing: 0.08em; border: 1px solid var(--black);
+  display: inline-flex; align-items: center; justify-content: center; padding: 12px 26px; cursor: pointer;
+  font-family: inherit; font-weight: 500; font-size: 0.88rem; letter-spacing: 0.08em; border: 1px solid var(--black);
   transition: background 300ms ease, color 300ms ease, transform 300ms ease;
 }
 .sl-btn:hover { transform: translateY(-3px); }
@@ -169,49 +171,49 @@ const STYLES = `
 
 .sl-strip { background: var(--black); color: var(--white); overflow: hidden; }
 .sl-strip-track { display: flex; width: max-content; animation: sl-slide 44s linear infinite; }
-.sl-strip-item { display: flex; align-items: center; gap: 34px; padding: 16px 0 16px 34px; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.5rem; white-space: nowrap; }
+.sl-strip-item { display: flex; align-items: center; gap: 34px; padding: 16px 0 16px 34px; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.15rem; white-space: nowrap; }
 .sl-strip-item i { font-style: normal; font-size: 1rem; }
 @keyframes sl-slide { to { transform: translateX(-50%); } }
 
-.sl-section { max-width: 1180px; margin: 0 auto; padding: clamp(72px, 10vw, 130px) clamp(20px, 5vw, 64px); }
-.sl-head { text-align: center; margin-bottom: 3rem; }
-.sl-h2 { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(2.2rem, 5.6vw, 4.2rem); line-height: 1.05; letter-spacing: -0.01em; }
+.sl-section { max-width: 1180px; margin: 0 auto; padding: clamp(56px, 7vw, 88px) clamp(20px, 5vw, 64px); }
+.sl-head { text-align: center; margin-bottom: 2.2rem; }
+.sl-h2 { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.12; letter-spacing: -0.01em; }
 .sl-h2 em { font-weight: 400; }
-.sl-sub { margin-top: 0.8rem; color: var(--mid); font-weight: 300; font-size: 1.05rem; }
+.sl-sub { margin-top: 0.8rem; color: var(--mid); font-weight: 300; font-size: 0.95rem; }
 .sl-dark { background: var(--black); color: var(--white); }
 .sl-dark .sl-sub { color: rgba(255, 255, 255, 0.65); }
 .sl-grey { background: var(--grey); }
-.sl-prose { max-width: 62ch; margin: 0 auto 1.2rem; text-align: center; font-size: 1.12rem; font-weight: 300; }
+.sl-prose { max-width: 62ch; margin: 0 auto 1.2rem; text-align: center; font-size: 1rem; font-weight: 300; }
 
 .sl-range { border-top: 1px solid var(--black); }
 .sl-range li { border-bottom: 1px solid var(--black); }
 .sl-range a {
-  display: flex; justify-content: space-between; align-items: center; padding: 0.35em 0.2em;
-  font-family: 'Bodoni Moda', serif; font-weight: 400; font-size: clamp(2.2rem, 7vw, 5rem); line-height: 1.1;
+  display: flex; justify-content: space-between; align-items: center; padding: 0.4em 0.2em;
+  font-family: 'Bodoni Moda', serif; font-weight: 400; font-size: clamp(1.5rem, 3.4vw, 2.3rem); line-height: 1.1;
   transition: background 350ms ease, color 350ms ease, padding 350ms ease;
 }
-.sl-range a span { font-family: 'Jost', sans-serif; font-size: 0.9rem; letter-spacing: 0.1em; opacity: 0; transition: opacity 300ms ease; }
-.sl-range a:hover { background: var(--black); color: var(--white); padding: 0.35em 0.6em; }
+.sl-range a span { font-family: 'Jost', sans-serif; font-size: 0.8rem; letter-spacing: 0.1em; opacity: 0; transition: opacity 300ms ease; }
+.sl-range a:hover { background: var(--black); color: var(--white); padding: 0.4em 0.6em; }
 .sl-range a:hover span { opacity: 1; }
 
 .sl-duo { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--black); }
-.sl-founder { padding: clamp(28px, 4vw, 56px); }
+.sl-founder { padding: clamp(24px, 3vw, 40px); }
 .sl-founder + .sl-founder { border-left: 1px solid var(--black); }
 .sl-founder:nth-child(2) { background: var(--black); color: var(--white); }
 .sl-focus { font-size: 0.85rem; letter-spacing: 0.14em; opacity: 0.65; }
-.sl-founder h3 { margin: 0.6rem 0 0.2rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; }
+.sl-founder h3 { margin: 0.6rem 0 0.2rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.15; }
 .sl-role { font-size: 0.92rem; opacity: 0.7; margin-bottom: 1.2rem; }
 .sl-founder p + p { margin-top: 0.9rem; }
-.sl-closing { max-width: 62ch; margin: 2.4rem auto 0; text-align: center; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.35rem; line-height: 1.55; }
+.sl-closing { max-width: 62ch; margin: 2.4rem auto 0; text-align: center; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.1rem; line-height: 1.6; }
 
-.sl-group { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 3rem 0 1.4rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--black); }
+.sl-group { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1.25rem, 2vw, 1.6rem); margin: 2.4rem 0 1.2rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--black); }
 .sl-group:first-of-type { margin-top: 0; }
 .sl-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.sl-card { padding: 30px; border: 1px solid var(--black); background: var(--white); transition: background 350ms ease, color 350ms ease; }
+.sl-card { padding: 26px; border: 1px solid var(--black); background: var(--white); transition: background 350ms ease, color 350ms ease; }
 .sl-card:hover { background: var(--black); color: var(--white); }
 .sl-card:hover .sl-tag, .sl-card:hover .sl-feats li::before { color: var(--white); }
 .sl-tag { font-size: 0.85rem; letter-spacing: 0.14em; color: var(--mid); }
-.sl-card h3 { margin: 0.4rem 0 0.6rem; font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: 1.7rem; line-height: 1.15; }
+.sl-card h3 { margin: 0.4rem 0 0.6rem; font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: 1.3rem; line-height: 1.2; }
 .sl-feats { margin-top: 1.1rem; }
 .sl-feats li { padding: 0.3rem 0; border-top: 1px solid rgba(128, 128, 128, 0.4); }
 .sl-feats li::before { content: '—'; margin-right: 0.7rem; }
@@ -233,22 +235,22 @@ const STYLES = `
 .sl-nav.next { right: 18px; }
 
 .sl-trio { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--black); }
-.sl-trio > div { padding: 40px 30px; }
+.sl-trio > div { padding: 30px 26px; }
 .sl-trio > div + div { border-left: 1px solid var(--black); }
-.sl-trio h3 { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: 1.7rem; line-height: 1.15; margin-bottom: 0.7rem; }
+.sl-trio h3 { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: 1.3rem; line-height: 1.2; margin-bottom: 0.6rem; }
 
 .sl-info { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--white); border-left: 1px solid var(--white); }
-.sl-info > div { padding: 34px 28px; border-right: 1px solid var(--white); border-bottom: 1px solid var(--white); transition: background 350ms ease, color 350ms ease; }
+.sl-info > div { padding: 26px 24px; border-right: 1px solid var(--white); border-bottom: 1px solid var(--white); transition: background 350ms ease, color 350ms ease; }
 .sl-info > div:hover { background: var(--white); color: var(--black); }
-.sl-info h3 { font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: 1.8rem; margin-bottom: 0.5rem; }
+.sl-info h3 { font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: 1.4rem; margin-bottom: 0.4rem; }
 .sl-info p { font-weight: 300; }
 
 .sl-faq { max-width: 780px; margin: 0 auto; border-top: 1px solid var(--black); }
 .sl-faq-row { border-bottom: 1px solid var(--black); }
 .sl-faq-btn {
-  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 4px;
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px 4px;
   background: none; border: 0; cursor: pointer; text-align: left; color: var(--black);
-  font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+  font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1rem, 1.6vw, 1.15rem);
   transition: padding 250ms ease;
 }
 .sl-faq-btn:hover { padding-left: 14px; }
@@ -261,9 +263,9 @@ const STYLES = `
 .sl-outro .sl-prose { color: rgba(255, 255, 255, 0.75); }
 
 .sl-contact { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--black); border-left: 1px solid var(--black); }
-.sl-contact a { padding: 28px; border-right: 1px solid var(--black); border-bottom: 1px solid var(--black); display: flex; flex-direction: column; gap: 4px; transition: background 300ms ease, color 300ms ease; }
+.sl-contact a { padding: 22px; border-right: 1px solid var(--black); border-bottom: 1px solid var(--black); display: flex; flex-direction: column; gap: 4px; transition: background 300ms ease, color 300ms ease; }
 .sl-contact a:hover { background: var(--black); color: var(--white); }
-.sl-contact h3 { font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: 1.5rem; }
+.sl-contact h3 { font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: 1.25rem; }
 .sl-contact span { overflow-wrap: anywhere; }
 
 .sl-footer { background: var(--black); color: rgba(255, 255, 255, 0.75); padding: 34px clamp(20px, 5vw, 64px) 40px; text-align: center; font-size: 0.9rem; }
