@@ -415,7 +415,7 @@ const STYLES = `
   position: relative;
 }
 .sl *, .sl *::before, .sl *::after { box-sizing: border-box; }
-.sl h1, .sl h2, .sl h3, .sl p, .sl ul, .sl address { margin: 0; padding: 0; }
+:where(.sl) :is(h1, h2, h3, p, ul, address) { margin: 0; padding: 0; }
 .sl ul { list-style: none; }
 .sl address { font-style: normal; }
 :where(.sl) a { color: inherit; text-decoration: none; }
