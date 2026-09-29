@@ -258,6 +258,7 @@ function Balatro({
       }
     }
     window.addEventListener('resize', resize)
+    window.addEventListener('orientationchange', resize)
     resize()
 
     const geometry = new Triangle(gl)
@@ -307,6 +308,7 @@ function Balatro({
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
+      window.removeEventListener('orientationchange', resize)
       if (mouseInteraction) window.removeEventListener('mousemove', handleMouseMove)
       if (gl.canvas.parentNode === container) container.removeChild(gl.canvas)
       const ext = gl.getExtension('WEBGL_lose_context')
@@ -716,6 +718,7 @@ class GalleryApp {
     this.scroll.target = this.scroll.position + distance
   }
   onTouchUp() {
+    if (!this.isDown) return
     this.isDown = false
     this.onCheck()
   }
@@ -783,33 +786,37 @@ class GalleryApp {
     this.boundOnKeyDown = this.onKeyDown.bind(this)
 
     window.addEventListener('resize', this.boundOnResize)
-    window.addEventListener('mousewheel', this.boundOnWheel)
-    window.addEventListener('wheel', this.boundOnWheel)
-    window.addEventListener('mousedown', this.boundOnTouchDown)
+    window.addEventListener('orientationchange', this.boundOnResize)
     window.addEventListener('mousemove', this.boundOnTouchMove)
     window.addEventListener('mouseup', this.boundOnTouchUp)
-    window.addEventListener('touchstart', this.boundOnTouchDown)
-    window.addEventListener('touchmove', this.boundOnTouchMove)
+    window.addEventListener('touchmove', this.boundOnTouchMove, { passive: true })
     window.addEventListener('touchend', this.boundOnTouchUp)
+    window.addEventListener('touchcancel', this.boundOnTouchUp)
 
-    this.container?.addEventListener('keydown', this.boundOnKeyDown)
+    this.container.addEventListener('mousewheel', this.boundOnWheel, { passive: true })
+    this.container.addEventListener('wheel', this.boundOnWheel, { passive: true })
+    this.container.addEventListener('mousedown', this.boundOnTouchDown)
+    this.container.addEventListener('touchstart', this.boundOnTouchDown, { passive: true })
+    this.container.addEventListener('keydown', this.boundOnKeyDown)
   }
   destroy() {
     window.cancelAnimationFrame(this.raf)
     window.removeEventListener('resize', this.boundOnResize)
-    window.removeEventListener('mousewheel', this.boundOnWheel)
-    window.removeEventListener('wheel', this.boundOnWheel)
-    window.removeEventListener('mousedown', this.boundOnTouchDown)
+    window.removeEventListener('orientationchange', this.boundOnResize)
     window.removeEventListener('mousemove', this.boundOnTouchMove)
     window.removeEventListener('mouseup', this.boundOnTouchUp)
-    window.removeEventListener('touchstart', this.boundOnTouchDown)
     window.removeEventListener('touchmove', this.boundOnTouchMove)
     window.removeEventListener('touchend', this.boundOnTouchUp)
+    window.removeEventListener('touchcancel', this.boundOnTouchUp)
+    if (this.container) {
+      this.container.removeEventListener('mousewheel', this.boundOnWheel)
+      this.container.removeEventListener('wheel', this.boundOnWheel)
+      this.container.removeEventListener('mousedown', this.boundOnTouchDown)
+      this.container.removeEventListener('touchstart', this.boundOnTouchDown)
+      this.container.removeEventListener('keydown', this.boundOnKeyDown)
+    }
     if (this.renderer && this.renderer.gl && this.renderer.gl.canvas.parentNode) {
       this.renderer.gl.canvas.parentNode.removeChild(this.renderer.gl.canvas)
-    }
-    if (this.container) {
-      this.container.removeEventListener('keydown', this.boundOnKeyDown)
     }
   }
 }
@@ -878,6 +885,7 @@ const STYLES = `
   line-height: 1.65;
   overflow-x: clip;
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
 }
 .at *, .at *::before, .at *::after { box-sizing: border-box; }
@@ -902,7 +910,7 @@ const STYLES = `
 .at-back:hover { transform: translateX(-3px); border-color: var(--gold-light); }
 
 .at-hero {
-  position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center;
+  position: relative; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; text-align: center;
   padding: 120px 24px 110px; overflow: hidden; isolation: isolate; color: #fff;
   background: #12061f;
 }
@@ -996,6 +1004,7 @@ const STYLES = `
   cursor: pointer; font-family: inherit; font-weight: 600; font-size: 0.98rem; padding: 12px 22px; border-radius: 999px;
   color: var(--plum); background: transparent; border: 1px solid rgba(122, 31, 209, 0.3);
   transition: background 250ms ease, color 250ms ease, border-color 250ms ease, transform 250ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 .at-tab:hover { border-color: var(--purple); transform: translateY(-2px); }
 .at-tab[aria-selected='true'] { background: linear-gradient(120deg, var(--purple), var(--orchid)); color: #fff; border-color: transparent; box-shadow: 0 10px 26px rgba(122, 31, 209, 0.32); }
@@ -1027,7 +1036,7 @@ const STYLES = `
 .at-dark .at-h2 { color: #fff; }
 .at-dark .at-sub { color: var(--muted-light); }
 .at-gallery-box { position: relative; height: 600px; margin-top: 2.6rem; }
-.circular-gallery { width: 100%; height: 100%; overflow: hidden; cursor: grab; }
+.circular-gallery { width: 100%; height: 100%; overflow: hidden; cursor: grab; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
 .circular-gallery:active { cursor: grabbing; }
 .circular-gallery:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 4px; }
 
@@ -1070,6 +1079,37 @@ const STYLES = `
   .at-contact-grid { grid-template-columns: 1fr; }
   .at-contact-item:nth-child(n) { border-radius: 26px; }
   .at-gallery-box { height: 480px; }
+}
+@media (max-width: 560px) {
+  .at-back { top: 12px; left: 12px; padding: 7px 14px; font-size: 0.82rem; }
+  .at-hero { padding: 100px 20px 90px; }
+  .at-spark { display: none; }
+  .at-wm-small { gap: 12px; }
+  .at-cta-row { flex-direction: column; align-items: stretch; width: 100%; max-width: 320px; }
+  .at-btn { padding: 13px 24px; }
+  .at-section { padding-top: 64px; padding-bottom: 64px; }
+
+  .at-hours { padding: 28px 22px; border-radius: 26px 26px 26px 64px; }
+  .at-tabs { margin-top: 2rem; gap: 6px; }
+  .at-tab { padding: 10px 16px; font-size: 0.9rem; }
+  .at-menu-panel { padding: 8px 18px; border-radius: 26px; }
+  .at-item { padding: 13px 0; gap: 8px; }
+  .at-item-dots { min-width: 8px; }
+  .at-item-price { font-size: 1.05rem; }
+
+  .at-why-row { grid-template-columns: 26px 1fr; gap: 14px; padding: 24px 0; }
+  .at-why-row:hover { padding-left: 0; }
+
+  .at-gallery-box { height: 400px; margin-top: 2rem; }
+
+  .at-policy li { flex-direction: column; gap: 2px; }
+  .at-policy span { text-align: left; }
+  .at-book-cta { padding: 26px 22px; border-radius: 26px; }
+  .at-book-cta h3 { font-size: 2rem; }
+  .at-book-cta .at-cta-row { max-width: none; width: 100%; }
+
+  .at-contact-item { padding: 22px; }
+  .at-footer-in { flex-direction: column; align-items: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
   .at *, .at *::before { transition-duration: 0.01ms !important; }
