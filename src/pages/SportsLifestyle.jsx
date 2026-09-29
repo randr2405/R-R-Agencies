@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useMotionValue, useScroll, useSpring, useTransform, useVelocity } from 'framer-motion'
+import { AnimatePresence, motion, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Renderer, Program, Mesh, Triangle } from 'ogl'
 
 const STORE_URL = 'https://www.randragencies.online'
-const GALLERY_COUNT = 12
+const GALLERY_COUNT = 16
 
 const galleryImages = Array.from({ length: GALLERY_COUNT }, (_, i) => ({
-  src: `/sports/product${i + 1}.png`,
+  src: encodeURI(`/sports/product1 (${i + 1}).jpg`),
   alt: `R&R Sport & Lifestyle product ${i + 1}`,
 }))
 
@@ -439,14 +439,14 @@ const STYLES = `
 .sl-curtain-half.bottom { bottom: 0; }
 .sl-curtain-word { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; color: var(--white); font-family: 'Bodoni Moda', serif; font-style: italic; font-size: clamp(2.4rem, 8vw, 5rem); letter-spacing: 0.04em; }
 
-.sl-hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 90px 24px 150px; overflow: hidden; isolation: isolate; perspective: 900px; background: var(--black); color: var(--white); }
+.sl-hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 90px 24px 90px; overflow: hidden; isolation: isolate; perspective: 900px; background: var(--black); color: var(--white); }
 .sl-hero-bg { position: absolute; inset: 0; z-index: -2; }
 .sl-hero-shade { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 55% 50% at 50% 46%, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.25) 70%, transparent 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 30%, rgba(0, 0, 0, 0.7) 100%); }
 .sl-hero::before { content: ''; position: absolute; inset: 22px; z-index: 0; border: 1px solid rgba(255, 255, 255, 0.85); pointer-events: none; }
 .sl-hero::after { content: ''; position: absolute; inset: 30px; z-index: 0; border: 1px solid rgba(255, 255, 255, 0.28); pointer-events: none; }
 .sl-hero-inner { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 720px; }
 .sl-logo-wrap { transform-style: preserve-3d; }
-.sl-logo { display: block; width: min(340px, 70vw); height: auto; filter: invert(1); mix-blend-mode: screen; }
+.sl-logo { display: block; width: min(340px, 70vw); height: auto;  }
 .sl-tagline { margin-top: 0.4rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: clamp(1.2rem, 2.4vw, 1.6rem); }
 .sl-lede { margin-top: 0.7rem; max-width: 32rem; color: rgba(255, 255, 255, 0.78); font-weight: 300; }
 .sl-cta { margin-top: 1.8rem; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
@@ -468,23 +468,12 @@ const STYLES = `
 .sl-hero .sl-btn-solid:hover { background: transparent; color: var(--white); }
 .sl-hero .sl-btn-line { color: var(--white); }
 .sl-hero .sl-btn-line:hover { background: var(--white); color: var(--black); }
-.sl-hero .sl-strip-outline .sl-strip-item { -webkit-text-stroke-color: var(--white); }
 
 .sl-badge { position: absolute; right: clamp(24px, 6vw, 90px); top: 130px; width: clamp(96px, 13vw, 150px); height: auto; animation: sl-spin 22s linear infinite; }
 .sl-badge text { font-family: 'Jost', sans-serif; font-weight: 500; font-size: 15.5px; letter-spacing: 0.22em; fill: currentColor; }
 .sl-badge-star { font-size: 30px; }
 @keyframes sl-spin { to { transform: rotate(360deg); } }
-.sl-hero-scroll { position: absolute; bottom: 112px; left: 50%; translate: -50% 0; font-size: 0.75rem; letter-spacing: 0.2em; color: rgba(255, 255, 255, 0.6); }
-
-.sl-marquees { position: absolute; left: 0; right: 0; bottom: 34px; overflow: hidden; }
-.sl-strip { overflow: hidden; }
-.sl-strip-track { display: flex; width: max-content; }
-.sl-strip-item { display: flex; align-items: center; gap: 30px; padding: 4px 0 4px 30px; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.9rem; white-space: nowrap; }
-.sl-strip-item i { font-style: normal; font-size: 0.9rem; }
-.sl-strip-outline .sl-strip-item { color: transparent; -webkit-text-stroke: 1px var(--black); }
-.sl-strip-a .sl-strip-track { animation: sl-slide 40s linear infinite; }
-.sl-strip-b .sl-strip-track { animation: sl-slide 48s linear infinite reverse; }
-@keyframes sl-slide { to { transform: translateX(-50%); } }
+.sl-hero-scroll { position: absolute; bottom: 40px; left: 50%; translate: -50% 0; font-size: 0.75rem; letter-spacing: 0.2em; color: rgba(255, 255, 255, 0.6); }
 
 .sl-section { max-width: 1180px; margin: 0 auto; padding: clamp(56px, 7vw, 88px) clamp(20px, 5vw, 64px); }
 .sl-head { text-align: center; margin-bottom: 2.2rem; }
@@ -678,26 +667,6 @@ function Badge({ id, text }) {
   )
 }
 
-function Marquee({ className, items }) {
-  const row = [...items, ...items]
-  return (
-    <div className={`sl-strip ${className}`} aria-hidden="true">
-      <div className="sl-strip-track">
-        {[0, 1].map(k => (
-          <div className="sl-strip-item" key={k}>
-            {row.map((t, i) => (
-              <span key={`${k}-${i}`} style={{ display: 'contents' }}>
-                <span>{t}</span>
-                <i>✦</i>
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function Hero() {
   const wrapRef = useRef(null)
   const mx = useMotionValue(0)
@@ -706,8 +675,6 @@ function Hero() {
   const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-12, 12]), { stiffness: 120, damping: 18 })
   const { scrollY } = useScroll()
   const y = useTransform(scrollY, [0, 600], [0, 70])
-  const v = useSpring(useVelocity(scrollY), { damping: 50, stiffness: 400 })
-  const skew = useTransform(v, [-2000, 2000], [-7, 7])
 
   const onMove = e => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -726,7 +693,7 @@ function Hero() {
         <motion.div className="sl-logo-wrap" ref={wrapRef} style={{ rotateX: rx, rotateY: ry }}>
           <motion.img
             className="sl-logo"
-            src="/logos/sports-lifestyle.png"
+            src="/logos/sports-lifestyle-white.png"
             alt="R&R Sport & Lifestyle"
             initial={{ opacity: 0, clipPath: 'inset(0 50% 0 50%)' }}
             animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0%)' }}
@@ -745,10 +712,6 @@ function Hero() {
         </motion.div>
       </motion.div>
       <div className="sl-hero-scroll" aria-hidden="true">scroll ↓</div>
-      <motion.div className="sl-marquees" style={{ skewX: skew }}>
-        <Marquee className="sl-strip-a sl-strip-outline" items={['Sportswear', 'Lifestyle', 'Luxury', 'Limited editions']} />
-        <Marquee className="sl-strip-b" items={['Men', 'Women', 'Kids', 'Babies', 'Kids\' underwear']} />
-      </motion.div>
     </section>
   )
 }
