@@ -210,7 +210,12 @@ function Lightfall({
     const container = containerRef.current
     if (!container) return undefined
 
-    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio || 1, 2), alpha: true, antialias: true })
+    const isSmall = window.matchMedia('(max-width: 900px)').matches
+    const renderer = new Renderer({
+      dpr: isSmall ? 1 : Math.min(window.devicePixelRatio || 1, 2),
+      alpha: true,
+      antialias: !isSmall,
+    })
     const gl = renderer.gl
     const canvas = gl.canvas
     canvas.style.width = '100%'
@@ -275,7 +280,12 @@ function Lightfall({
 
     let raf = 0
     let last = 0
+    let running = true
     const loop = t => {
+      if (!running) {
+        raf = 0
+        return
+      }
       raf = requestAnimationFrame(loop)
       uniforms.iTime.value = t * 0.001
       if (mouseDampening > 0) {
@@ -289,11 +299,22 @@ function Lightfall({
       }
       renderer.render({ scene: mesh })
     }
+
+    const io = new IntersectionObserver(([entry]) => {
+      running = entry.isIntersecting
+      if (running && !raf) {
+        last = 0
+        raf = requestAnimationFrame(loop)
+      }
+    })
+    io.observe(container)
     raf = requestAnimationFrame(loop)
 
     return () => {
+      running = false
       cancelAnimationFrame(raf)
       if (mouseInteraction) window.removeEventListener('pointermove', onPointerMove)
+      io.disconnect()
       ro.disconnect()
       if (canvas.parentElement === container) container.removeChild(canvas)
       gl.getExtension('WEBGL_lose_context')?.loseContext()
@@ -396,7 +417,6 @@ const faqs = [
   { q: 'Who do I contact for help?', a: 'Message or call us directly. Support is available 24/7.' },
 ]
 
-
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,800;1,6..96,400;1,6..96,600&family=Jost:wght@300;400;500;600&display=swap');
 
@@ -413,17 +433,21 @@ const STYLES = `
   overflow-x: clip;
   min-height: 100vh;
   position: relative;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 .sl *, .sl *::before, .sl *::after { box-sizing: border-box; }
 :where(.sl) :is(h1, h2, h3, p, ul, address) { margin: 0; padding: 0; }
 .sl ul { list-style: none; }
 .sl address { font-style: normal; }
+.sl img { max-width: 100%; }
 :where(.sl) a { color: inherit; text-decoration: none; }
 .sl a:focus-visible, .sl button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
 .sl h1, .sl h2, .sl h3, .sl-tagline, .sl-strip-item, .sl-closing, .sl-faq-btn, .sl-word-big { font-variation-settings: 'opsz' 28; }
 
 .sl-cursor { position: fixed; top: 0; left: 0; z-index: 300; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: #fff; mix-blend-mode: difference; pointer-events: none; }
-@media (pointer: coarse) { .sl-cursor { display: none; } }
+@media (pointer: coarse), (hover: none) { .sl-cursor { display: none; } }
 
 .sl-bar { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 70; transform-origin: 0 50%; background: var(--white); mix-blend-mode: difference; }
 .sl-back {
@@ -439,19 +463,19 @@ const STYLES = `
 .sl-curtain-half.bottom { bottom: 0; }
 .sl-curtain-word { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; color: var(--white); font-family: 'Bodoni Moda', serif; font-style: italic; font-size: clamp(2.4rem, 8vw, 5rem); letter-spacing: 0.04em; }
 
-.sl-hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 90px 24px 90px; overflow: hidden; isolation: isolate; perspective: 900px; background: var(--black); color: var(--white); }
+.sl-hero { position: relative; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; text-align: center; padding: 90px 24px 90px; overflow: hidden; isolation: isolate; perspective: 900px; background: var(--black); color: var(--white); }
 .sl-hero-bg { position: absolute; inset: 0; z-index: -2; }
 .sl-hero-shade { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 55% 50% at 50% 46%, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.25) 70%, transparent 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 30%, rgba(0, 0, 0, 0.7) 100%); }
 .sl-hero::before { content: ''; position: absolute; inset: 22px; z-index: 0; border: 1px solid rgba(255, 255, 255, 0.85); pointer-events: none; }
 .sl-hero::after { content: ''; position: absolute; inset: 30px; z-index: 0; border: 1px solid rgba(255, 255, 255, 0.28); pointer-events: none; }
-.sl-hero-inner { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 720px; }
+.sl-hero-inner { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 720px; position: relative; z-index: 1; }
 .sl-logo-wrap { transform-style: preserve-3d; }
-.sl-logo { display: block; width: min(340px, 70vw); height: auto;  }
+.sl-logo { display: block; width: min(340px, 70vw); height: auto; }
 .sl-tagline { margin-top: 0.4rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: clamp(1.2rem, 2.4vw, 1.6rem); }
 .sl-lede { margin-top: 0.7rem; max-width: 32rem; color: rgba(255, 255, 255, 0.78); font-weight: 300; }
 .sl-cta { margin-top: 1.8rem; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 .sl-btn {
-  display: inline-flex; align-items: center; justify-content: center; padding: 12px 26px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 12px 26px; cursor: pointer; text-align: center;
   font-family: inherit; font-weight: 500; font-size: 0.88rem; letter-spacing: 0.08em; border: 1px solid var(--black);
   transition: background 300ms ease, color 300ms ease, transform 300ms ease;
 }
@@ -494,8 +518,8 @@ const STYLES = `
 }
 .sl-stack-card.light { background: var(--white); color: var(--black); }
 .sl-stack-card.dark { background: var(--black); color: var(--white); border-color: var(--white); box-shadow: 0 0 0 1px var(--black); }
-.sl-stack-top { display: flex; justify-content: space-between; font-size: 0.8rem; letter-spacing: 0.16em; opacity: 0.7; }
-.sl-word-big { font-family: 'Bodoni Moda', serif; font-weight: 400; font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1; }
+.sl-stack-top { display: flex; justify-content: space-between; gap: 12px; font-size: 0.8rem; letter-spacing: 0.16em; opacity: 0.7; }
+.sl-word-big { font-family: 'Bodoni Moda', serif; font-weight: 400; font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1; overflow-wrap: anywhere; }
 .sl-stack-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .sl-stack-card .sl-btn { border-color: currentColor; background: transparent; color: inherit; }
 .sl-stack-card .sl-btn:hover { background: currentColor; }
@@ -536,13 +560,14 @@ const STYLES = `
 .sl-tile:hover { border-color: var(--white); }
 .sl-tile img { display: block; width: 100%; height: auto; pointer-events: none; filter: grayscale(1) contrast(1.05); transition: filter 500ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1); }
 .sl-tile:hover img { filter: grayscale(0); transform: scale(1.05); }
-.sl-hint { text-align: center; margin-top: 0.6rem; font-size: 0.85rem; letter-spacing: 0.14em; color: rgba(255, 255, 255, 0.6); }
+.sl-hint { text-align: center; margin-top: 0.6rem; padding: 0 18px; font-size: 0.85rem; letter-spacing: 0.14em; color: rgba(255, 255, 255, 0.6); }
 .sl-empty { text-align: center; color: rgba(255, 255, 255, 0.6); }
 .sl-lightbox { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 24px; background: rgba(0, 0, 0, 0.94); cursor: zoom-out; }
-.sl-lightbox img { max-width: min(92vw, 900px); max-height: 86vh; border: 1px solid var(--white); }
+.sl-lightbox img { max-width: min(92vw, 900px); max-height: 86vh; max-height: 86svh; border: 1px solid var(--white); touch-action: pan-y; -webkit-user-select: none; user-select: none; }
 .sl-nav { position: absolute; top: 50%; translate: 0 -50%; width: 48px; height: 48px; border: 1px solid var(--white); background: var(--black); color: var(--white); font-size: 1.4rem; cursor: pointer; }
 .sl-nav.prev { left: 18px; }
 .sl-nav.next { right: 18px; }
+.sl-close { position: absolute; top: 16px; right: 16px; z-index: 2; width: 44px; height: 44px; border: 1px solid var(--white); background: var(--black); color: var(--white); font-size: 1.3rem; line-height: 1; cursor: pointer; }
 
 .sl-trio { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--black); }
 .sl-trio > div { padding: 30px 26px; }
@@ -557,9 +582,9 @@ const STYLES = `
 
 .sl-faq { max-width: 780px; margin: 0 auto; border-top: 1px solid var(--black); }
 .sl-faq-row { border-bottom: 1px solid var(--black); }
-.sl-faq-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px 4px; background: none; border: 0; cursor: pointer; text-align: left; color: var(--black); font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1rem, 1.6vw, 1.15rem); transition: padding 250ms ease; }
+.sl-faq-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 20px; min-height: 52px; padding: 18px 4px; background: none; border: 0; cursor: pointer; text-align: left; color: var(--black); font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1rem, 1.6vw, 1.15rem); transition: padding 250ms ease; }
 .sl-faq-btn:hover { padding-left: 14px; }
-.sl-faq-btn i { font-style: normal; font-size: 1.8rem; transition: transform 300ms ease; }
+.sl-faq-btn i { font-style: normal; font-size: 1.8rem; transition: transform 300ms ease; flex: none; }
 .sl-faq-btn[aria-expanded='true'] i { transform: rotate(45deg); }
 .sl-faq-body { overflow: hidden; }
 .sl-faq-body p { padding: 0 4px 24px; max-width: 44rem; color: var(--mid); font-weight: 300; }
@@ -570,22 +595,80 @@ const STYLES = `
 .sl-outro .sl-section { position: relative; }
 
 .sl-contact { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--black); border-left: 1px solid var(--black); }
-.sl-contact a { padding: 22px; border-right: 1px solid var(--black); border-bottom: 1px solid var(--black); display: flex; flex-direction: column; gap: 4px; transition: background 300ms ease, color 300ms ease; }
+.sl-contact a { padding: 22px; border-right: 1px solid var(--black); border-bottom: 1px solid var(--black); display: flex; flex-direction: column; gap: 4px; min-width: 0; transition: background 300ms ease, color 300ms ease; }
 .sl-contact a:hover { background: var(--black); color: var(--white); }
 .sl-contact h3 { font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: 1.25rem; }
 .sl-contact span { overflow-wrap: anywhere; }
 
 .sl-footer { background: var(--black); color: rgba(255, 255, 255, 0.75); padding: 34px clamp(20px, 5vw, 64px) 40px; text-align: center; font-size: 0.9rem; }
-.sl-footer a { margin: 0 0.7rem; }
+.sl-footer-links { margin-top: 0.6rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 1.4rem; }
+.sl-footer-links a { overflow-wrap: anywhere; }
 .sl-footer a:hover { color: var(--white); text-decoration: underline; }
 
 @media (max-width: 900px) {
+  .sl-hero { padding: 88px clamp(20px, 5vw, 40px) 80px; }
+  .sl-hero::before { inset: 14px; }
+  .sl-hero::after { inset: 20px; }
+  .sl-badge { top: 84px; right: 18px; }
   .sl-duo { flex-direction: column; min-height: 0; }
   .sl-duo:hover .sl-founder, .sl-duo .sl-founder:hover { flex: 1; }
-  .sl-cols, .sl-trio, .sl-info, .sl-contact { grid-template-columns: 1fr; }
+  .sl-cols, .sl-trio { grid-template-columns: 1fr; }
+  .sl-info, .sl-contact { grid-template-columns: 1fr 1fr; }
   .sl-founder + .sl-founder, .sl-trio > div + div { border-left: 0; border-top: 1px solid var(--black); }
-  .sl-badge { top: 84px; right: 18px; }
-  .sl-stack-card { position: relative; top: auto !important; height: 260px; }
+  .sl-stack-card { height: min(44vh, 300px); min-height: 240px; }
+}
+@media (max-width: 600px) {
+  .sl { font-size: 14.5px; }
+  .sl-back { top: 12px; left: 10px; padding: 6px 12px; font-size: 0.78rem; }
+  .sl-hero { padding: 80px 20px 56px; }
+  .sl-hero::before { inset: 8px; }
+  .sl-hero::after { inset: 13px; }
+  .sl-hero .sl-badge, .sl-hero-scroll { display: none; }
+  .sl-logo { width: min(300px, 78vw); }
+  .sl-cta { width: 100%; flex-direction: column; align-items: stretch; }
+  .sl-info, .sl-contact { grid-template-columns: 1fr; }
+  .sl-section { padding: 48px 18px; }
+  .sl-head { margin-bottom: 1.6rem; }
+  .sl-lead { margin-bottom: 2rem; }
+  .sl-stack-card { height: 260px; min-height: 0; padding: 20px; margin-bottom: 18px; }
+  .sl-stack-top { font-size: 0.7rem; letter-spacing: 0.1em; }
+  .sl-stack-foot { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .sl-founder { padding: 26px 20px; font-size: 1rem; }
+  .sl-card { padding: 22px 18px; }
+  .sl-tile { width: min(62vw, 260px); }
+  .sl-rail { gap: 18px; padding: 0 18px; }
+  .sl-hint { font-size: 0.75rem; letter-spacing: 0.1em; }
+  .sl-trio > div, .sl-info > div { padding: 22px 18px; }
+  .sl-contact a { padding: 18px; }
+  .sl-faq-btn { padding: 16px 2px; gap: 14px; }
+  .sl-closing { margin-top: 3rem; padding-top: 1.8rem; }
+  .sl-lightbox { padding: 64px 12px 92px; }
+  .sl-lightbox img { max-width: 94vw; max-height: 72vh; max-height: 72svh; }
+  .sl-nav { top: auto; bottom: 22px; translate: 0 0; width: 46px; height: 46px; }
+  .sl-nav.prev { left: calc(50% - 60px); }
+  .sl-nav.next { right: calc(50% - 60px); }
+  .sl-close { top: 12px; right: 12px; }
+  .sl-outro .sl-badge { opacity: 0.12; }
+  .sl-footer { padding: 28px 18px 34px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .sl-hero { padding-top: 64px; padding-bottom: 40px; }
+  .sl-hero-scroll { display: none; }
+  .sl-hero .sl-badge { display: none; }
+  .sl-stack-card { height: 220px; min-height: 0; }
+}
+@media (hover: none) {
+  .sl-btn:hover, .sl-back:hover { transform: none; }
+  .sl-tile img { filter: none; }
+  .sl-tile:hover img { transform: none; }
+  .sl-tile:hover { border-color: rgba(255, 255, 255, 0.4); }
+  .sl-hint-hover { display: none; }
+  .sl-card:hover { color: inherit; }
+  .sl-card:hover::before { transform: translateY(101%); }
+  .sl-info > div:hover { background: transparent; color: inherit; }
+  .sl-contact a:hover { background: transparent; color: inherit; }
+  .sl-faq-btn:hover { padding-left: 4px; }
+  .sl-duo:hover .sl-founder, .sl-duo .sl-founder:hover { flex: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sl *, .sl *::before { transition-duration: 0.01ms !important; }
@@ -625,6 +708,7 @@ function Cursor() {
   const [big, setBig] = useState(false)
 
   useEffect(() => {
+    if (window.matchMedia('(pointer: coarse), (hover: none)').matches) return undefined
     const move = e => {
       x.set(e.clientX)
       y.set(e.clientY)
@@ -678,6 +762,7 @@ function Hero() {
   const y = useTransform(scrollY, [0, 600], [0, 70])
 
   const onMove = e => {
+    if (e.pointerType && e.pointerType !== 'mouse') return
     const r = e.currentTarget.getBoundingClientRect()
     mx.set((e.clientX - r.left) / r.width - 0.5)
     my.set((e.clientY - r.top) / r.height - 0.5)
@@ -783,10 +868,12 @@ function Gallery() {
       if (railRef.current && wrapRef.current) setLimit(Math.max(0, railRef.current.scrollWidth - wrapRef.current.clientWidth))
     }
     measure()
-    const t = setTimeout(measure, 800)
+    const ro = new ResizeObserver(measure)
+    if (railRef.current) ro.observe(railRef.current)
+    if (wrapRef.current) ro.observe(wrapRef.current)
     window.addEventListener('resize', measure)
     return () => {
-      clearTimeout(t)
+      ro.disconnect()
       window.removeEventListener('resize', measure)
     }
   }, [failed])
@@ -801,6 +888,8 @@ function Gallery() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [active, visible.length])
+
+  const step = dir => setActive(a => (a + dir + visible.length) % visible.length)
 
   return (
     <div className="sl-dark" id="gallery">
@@ -827,13 +916,31 @@ function Gallery() {
           })}
         </motion.div>
       </div>
-      <p className="sl-hint" style={{ paddingBottom: 60 }}>DRAG TO EXPLORE · HOVER FOR COLOUR · TAP TO ENLARGE</p>
+      <p className="sl-hint" style={{ paddingBottom: 60 }}>
+        DRAG TO EXPLORE · <span className="sl-hint-hover">HOVER FOR COLOUR · </span>TAP TO ENLARGE
+      </p>
       <AnimatePresence>
         {active >= 0 && visible[active] && (
           <motion.div className="sl-lightbox" role="dialog" aria-modal="true" aria-label="Product photo" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActive(-1)}>
-            <button type="button" className="sl-nav prev" aria-label="Previous photo" onClick={e => { e.stopPropagation(); setActive((active - 1 + visible.length) % visible.length) }}>‹</button>
-            <motion.img key={visible[active].src} src={visible[active].src} alt={visible[active].alt} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} onClick={e => e.stopPropagation()} />
-            <button type="button" className="sl-nav next" aria-label="Next photo" onClick={e => { e.stopPropagation(); setActive((active + 1) % visible.length) }}>›</button>
+            <button type="button" className="sl-close" aria-label="Close photo" onClick={e => { e.stopPropagation(); setActive(-1) }}>×</button>
+            <button type="button" className="sl-nav prev" aria-label="Previous photo" onClick={e => { e.stopPropagation(); step(-1) }}>‹</button>
+            <motion.img
+              key={visible[active].src}
+              src={visible[active].src}
+              alt={visible[active].alt}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.6}
+              onDragEnd={(e, info) => {
+                if (info.offset.x < -60) step(1)
+                else if (info.offset.x > 60) step(-1)
+              }}
+              onClick={e => e.stopPropagation()}
+            />
+            <button type="button" className="sl-nav next" aria-label="Next photo" onClick={e => { e.stopPropagation(); step(1) }}>›</button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1015,7 +1122,7 @@ export default function SportsLifestyle() {
 
       <footer className="sl-footer">
         <span>© 2026 R&R Sport & Lifestyle, a brand of R&R Agencies. All rights reserved.</span>
-        <div style={{ marginTop: '0.6rem' }}>
+        <div className="sl-footer-links">
           <a href="mailto:info@rragencies.co.za">info@rragencies.co.za</a>
           <Link to="/">R&R Agencies</Link>
         </div>
