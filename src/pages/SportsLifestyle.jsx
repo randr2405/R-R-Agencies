@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion'
+import { AnimatePresence, motion, useMotionValue, useScroll, useSpring, useTransform, useVelocity } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
 const STORE_URL = 'https://www.randragencies.online'
@@ -9,6 +9,9 @@ const galleryImages = Array.from({ length: GALLERY_COUNT }, (_, i) => ({
   src: `/sports/product${i + 1}.png`,
   alt: `R&R Sport & Lifestyle product ${i + 1}`,
 }))
+
+const statement =
+  "R&R Sports & Lifestyle is our answer to the modern athlete and lifestyle enthusiast who demands more from their apparel. We believe that performance wear shouldn't sacrifice style, and street fashion shouldn't compromise on functionality."
 
 const founders = [
   {
@@ -103,7 +106,6 @@ const faqs = [
   { q: 'Who do I contact for help?', a: 'Message or call us directly. Support is available 24/7.' },
 ]
 
-const ticker = ['Own the look', 'Own the moment', 'Men', 'Women', 'Kids', 'Babies', 'Limited editions']
 
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,800;1,6..96,400;1,6..96,600&family=Jost:wght@300;400;500;600&display=swap');
@@ -111,9 +113,8 @@ const STYLES = `
 .sl {
   --black: #000;
   --white: #fff;
-  --grey: #f2f2f2;
+  --grey: #ececec;
   --mid: #6a6a6a;
-  --line: rgba(0, 0, 0, 0.9);
   background: var(--white);
   color: var(--black);
   font-family: 'Jost', system-ui, sans-serif;
@@ -129,10 +130,12 @@ const STYLES = `
 .sl address { font-style: normal; }
 :where(.sl) a { color: inherit; text-decoration: none; }
 .sl a:focus-visible, .sl button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.sl h1, .sl h2, .sl h3, .sl-tagline, .sl-strip-item, .sl-closing, .sl-faq-btn, .sl-word-big { font-variation-settings: 'opsz' 28; }
 
-.sl h1, .sl h2, .sl h3, .sl-tagline, .sl-range a, .sl-strip-item, .sl-closing, .sl-faq-btn { font-variation-settings: 'opsz' 28; }
+.sl-cursor { position: fixed; top: 0; left: 0; z-index: 300; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: #fff; mix-blend-mode: difference; pointer-events: none; }
+@media (pointer: coarse) { .sl-cursor { display: none; } }
 
-.sl-bar { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 70; transform-origin: 0 50%; background: var(--black); mix-blend-mode: difference; }
+.sl-bar { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 70; transform-origin: 0 50%; background: var(--white); mix-blend-mode: difference; }
 .sl-back {
   position: fixed; top: 16px; left: 18px; z-index: 60; padding: 8px 16px; font-size: 0.82rem; font-weight: 500;
   background: var(--black); color: var(--white); border: 1px solid var(--white); box-shadow: 0 0 0 1px var(--black);
@@ -140,21 +143,21 @@ const STYLES = `
 }
 .sl-back:hover { transform: translateX(-3px); }
 
-.sl-hero {
-  position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center;
-  padding: 90px 24px 80px; overflow: hidden; isolation: isolate;
-}
-.sl-hero::before {
-  content: ''; position: absolute; inset: 22px; z-index: -1; border: 1px solid var(--black); pointer-events: none;
-}
-.sl-hero::after {
-  content: ''; position: absolute; inset: 30px; z-index: -1; border: 1px solid rgba(0, 0, 0, 0.25); pointer-events: none;
-}
+.sl-curtain { position: fixed; inset: 0; z-index: 400; pointer-events: none; }
+.sl-curtain-half { position: absolute; left: 0; right: 0; height: 50.5%; background: var(--black); }
+.sl-curtain-half.top { top: 0; }
+.sl-curtain-half.bottom { bottom: 0; }
+.sl-curtain-word { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; color: var(--white); font-family: 'Bodoni Moda', serif; font-style: italic; font-size: clamp(2.4rem, 8vw, 5rem); letter-spacing: 0.04em; }
+
+.sl-hero { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 90px 24px 150px; overflow: hidden; isolation: isolate; perspective: 900px; }
+.sl-hero::before { content: ''; position: absolute; inset: 22px; z-index: -1; border: 1px solid var(--black); pointer-events: none; }
+.sl-hero::after { content: ''; position: absolute; inset: 30px; z-index: -1; border: 1px solid rgba(0, 0, 0, 0.25); pointer-events: none; }
 .sl-hero-inner { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 720px; }
-.sl-logo { width: min(320px, 70vw); height: auto; mix-blend-mode: multiply; }
-.sl-tagline { margin-top: 0.6rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: clamp(1.2rem, 2.4vw, 1.6rem); }
-.sl-lede { margin-top: 0.8rem; max-width: 34rem; color: var(--mid); font-weight: 300; }
-.sl-cta { margin-top: 2rem; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.sl-logo-wrap { transform-style: preserve-3d; }
+.sl-logo { display: block; width: min(340px, 70vw); height: auto; mix-blend-mode: multiply; }
+.sl-tagline { margin-top: 0.4rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: clamp(1.2rem, 2.4vw, 1.6rem); }
+.sl-lede { margin-top: 0.7rem; max-width: 32rem; color: var(--mid); font-weight: 300; }
+.sl-cta { margin-top: 1.8rem; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 .sl-btn {
   display: inline-flex; align-items: center; justify-content: center; padding: 12px 26px; cursor: pointer;
   font-family: inherit; font-weight: 500; font-size: 0.88rem; letter-spacing: 0.08em; border: 1px solid var(--black);
@@ -167,66 +170,84 @@ const STYLES = `
 .sl-btn-line:hover { background: var(--black); color: var(--white); }
 .sl-dark .sl-btn-solid { background: var(--white); color: var(--black); border-color: var(--white); }
 .sl-dark .sl-btn-solid:hover { background: transparent; color: var(--white); }
-.sl-scroll { position: absolute; bottom: 40px; left: 50%; translate: -50% 0; font-size: 0.8rem; letter-spacing: 0.2em; color: var(--mid); }
 
-.sl-strip { background: var(--black); color: var(--white); overflow: hidden; }
-.sl-strip-track { display: flex; width: max-content; animation: sl-slide 44s linear infinite; }
-.sl-strip-item { display: flex; align-items: center; gap: 34px; padding: 16px 0 16px 34px; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.15rem; white-space: nowrap; }
-.sl-strip-item i { font-style: normal; font-size: 1rem; }
+.sl-badge { position: absolute; right: clamp(24px, 6vw, 90px); top: 130px; width: clamp(96px, 13vw, 150px); height: auto; animation: sl-spin 22s linear infinite; }
+.sl-badge text { font-family: 'Jost', sans-serif; font-weight: 500; font-size: 15.5px; letter-spacing: 0.22em; fill: currentColor; }
+.sl-badge-star { font-size: 30px; }
+@keyframes sl-spin { to { transform: rotate(360deg); } }
+.sl-hero-scroll { position: absolute; bottom: 112px; left: 50%; translate: -50% 0; font-size: 0.75rem; letter-spacing: 0.2em; color: var(--mid); }
+
+.sl-marquees { position: absolute; left: 0; right: 0; bottom: 34px; overflow: hidden; }
+.sl-strip { overflow: hidden; }
+.sl-strip-track { display: flex; width: max-content; }
+.sl-strip-item { display: flex; align-items: center; gap: 30px; padding: 4px 0 4px 30px; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.9rem; white-space: nowrap; }
+.sl-strip-item i { font-style: normal; font-size: 0.9rem; }
+.sl-strip-outline .sl-strip-item { color: transparent; -webkit-text-stroke: 1px var(--black); }
+.sl-strip-a .sl-strip-track { animation: sl-slide 40s linear infinite; }
+.sl-strip-b .sl-strip-track { animation: sl-slide 48s linear infinite reverse; }
 @keyframes sl-slide { to { transform: translateX(-50%); } }
 
 .sl-section { max-width: 1180px; margin: 0 auto; padding: clamp(56px, 7vw, 88px) clamp(20px, 5vw, 64px); }
 .sl-head { text-align: center; margin-bottom: 2.2rem; }
 .sl-h2 { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.12; letter-spacing: -0.01em; }
-.sl-h2 em { font-weight: 400; }
 .sl-sub { margin-top: 0.8rem; color: var(--mid); font-weight: 300; font-size: 0.95rem; }
 .sl-dark { background: var(--black); color: var(--white); }
 .sl-dark .sl-sub { color: rgba(255, 255, 255, 0.65); }
 .sl-grey { background: var(--grey); }
 .sl-prose { max-width: 62ch; margin: 0 auto 1.2rem; text-align: center; font-size: 1rem; font-weight: 300; }
 
-.sl-range { border-top: 1px solid var(--black); }
-.sl-range li { border-bottom: 1px solid var(--black); }
-.sl-range a {
-  display: flex; justify-content: space-between; align-items: center; padding: 0.4em 0.2em;
-  font-family: 'Bodoni Moda', serif; font-weight: 400; font-size: clamp(1.5rem, 3.4vw, 2.3rem); line-height: 1.1;
-  transition: background 350ms ease, color 350ms ease, padding 350ms ease;
-}
-.sl-range a span { font-family: 'Jost', sans-serif; font-size: 0.8rem; letter-spacing: 0.1em; opacity: 0; transition: opacity 300ms ease; }
-.sl-range a:hover { background: var(--black); color: var(--white); padding: 0.4em 0.6em; }
-.sl-range a:hover span { opacity: 1; }
+.sl-reveal { max-width: 900px; margin: 0 auto; text-align: center; font-family: 'Bodoni Moda', serif; font-size: clamp(1.35rem, 2.9vw, 2.1rem); line-height: 1.4; }
+.sl-reveal span { display: inline-block; margin-right: 0.28em; }
 
-.sl-duo { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--black); }
-.sl-founder { padding: clamp(24px, 3vw, 40px); }
+.sl-stack { padding-bottom: 20px; }
+.sl-stack-card {
+  position: sticky; height: min(58vh, 420px); margin-bottom: 26px; display: flex; flex-direction: column; justify-content: space-between;
+  padding: clamp(22px, 3vw, 40px); border: 1px solid var(--black); overflow: hidden;
+}
+.sl-stack-card.light { background: var(--white); color: var(--black); }
+.sl-stack-card.dark { background: var(--black); color: var(--white); border-color: var(--white); box-shadow: 0 0 0 1px var(--black); }
+.sl-stack-top { display: flex; justify-content: space-between; font-size: 0.8rem; letter-spacing: 0.16em; opacity: 0.7; }
+.sl-word-big { font-family: 'Bodoni Moda', serif; font-weight: 400; font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1; }
+.sl-stack-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.sl-stack-card .sl-btn { border-color: currentColor; background: transparent; color: inherit; }
+.sl-stack-card .sl-btn:hover { background: currentColor; }
+.sl-stack-card .sl-btn:hover span { color: var(--white); mix-blend-mode: difference; }
+
+.sl-duo { display: flex; border: 1px solid var(--black); min-height: 460px; }
+.sl-founder { flex: 1; padding: clamp(24px, 3vw, 40px); transition: flex 700ms cubic-bezier(0.22, 1, 0.36, 1), background 500ms ease, color 500ms ease; overflow: hidden; }
 .sl-founder + .sl-founder { border-left: 1px solid var(--black); }
 .sl-founder:nth-child(2) { background: var(--black); color: var(--white); }
-.sl-focus { font-size: 0.85rem; letter-spacing: 0.14em; opacity: 0.65; }
+.sl-duo:hover .sl-founder { flex: 0.72; }
+.sl-duo .sl-founder:hover { flex: 1.5; }
+.sl-focus { font-size: 0.82rem; letter-spacing: 0.14em; opacity: 0.65; }
 .sl-founder h3 { margin: 0.6rem 0 0.2rem; font-family: 'Bodoni Moda', serif; font-style: italic; font-weight: 400; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.15; }
-.sl-role { font-size: 0.92rem; opacity: 0.7; margin-bottom: 1.2rem; }
+.sl-role { font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.1rem; }
 .sl-founder p + p { margin-top: 0.9rem; }
-.sl-closing { max-width: 62ch; margin: 2.4rem auto 0; text-align: center; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.1rem; line-height: 1.6; }
+.sl-closing { max-width: 62ch; margin: 2.2rem auto 0; text-align: center; font-family: 'Bodoni Moda', serif; font-style: italic; font-size: 1.1rem; line-height: 1.6; }
 
 .sl-group { font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1.25rem, 2vw, 1.6rem); margin: 2.4rem 0 1.2rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--black); }
 .sl-group:first-of-type { margin-top: 0; }
 .sl-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.sl-card { padding: 26px; border: 1px solid var(--black); background: var(--white); transition: background 350ms ease, color 350ms ease; }
-.sl-card:hover { background: var(--black); color: var(--white); }
-.sl-card:hover .sl-tag, .sl-card:hover .sl-feats li::before { color: var(--white); }
-.sl-tag { font-size: 0.85rem; letter-spacing: 0.14em; color: var(--mid); }
+.sl-card { position: relative; padding: 26px; border: 1px solid var(--black); background: var(--white); overflow: hidden; isolation: isolate; transition: color 400ms ease; }
+.sl-card::before { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--black); transform: translateY(101%); transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1); }
+.sl-card:hover { color: var(--white); }
+.sl-card:hover::before { transform: translateY(0); }
+.sl-tag { font-size: 0.82rem; letter-spacing: 0.14em; opacity: 0.6; }
 .sl-card h3 { margin: 0.4rem 0 0.6rem; font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: 1.3rem; line-height: 1.2; }
 .sl-feats { margin-top: 1.1rem; }
 .sl-feats li { padding: 0.3rem 0; border-top: 1px solid rgba(128, 128, 128, 0.4); }
 .sl-feats li::before { content: '—'; margin-right: 0.7rem; }
 
-.sl-masonry { columns: 3; column-gap: 18px; }
-.sl-tile {
-  display: block; width: 100%; margin: 0 0 18px; padding: 0; border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.05); cursor: zoom-in; break-inside: avoid; overflow: hidden; position: relative;
-  transition: border-color 300ms ease;
-}
+.sl-lookbook { overflow: hidden; cursor: grab; padding: 30px 0 40px; }
+.sl-lookbook:active { cursor: grabbing; }
+.sl-rail { display: flex; gap: 26px; width: max-content; padding: 0 clamp(20px, 5vw, 64px); align-items: center; }
+.sl-tile { flex: none; width: clamp(200px, 24vw, 280px); margin: 0; padding: 0; border: 1px solid rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.05); cursor: inherit; overflow: hidden; position: relative; transition: border-color 300ms ease; }
+.sl-tile:nth-child(odd) { rotate: -2deg; margin-top: 30px; }
+.sl-tile:nth-child(even) { rotate: 2deg; margin-bottom: 30px; }
 .sl-tile:hover { border-color: var(--white); }
-.sl-tile img { display: block; width: 100%; height: auto; filter: grayscale(1) contrast(1.05); transition: filter 500ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1); }
+.sl-tile img { display: block; width: 100%; height: auto; pointer-events: none; filter: grayscale(1) contrast(1.05); transition: filter 500ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1); }
 .sl-tile:hover img { filter: grayscale(0); transform: scale(1.05); }
+.sl-hint { text-align: center; margin-top: 0.6rem; font-size: 0.85rem; letter-spacing: 0.14em; color: rgba(255, 255, 255, 0.6); }
 .sl-empty { text-align: center; color: rgba(255, 255, 255, 0.6); }
 .sl-lightbox { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 24px; background: rgba(0, 0, 0, 0.94); cursor: zoom-out; }
 .sl-lightbox img { max-width: min(92vw, 900px); max-height: 86vh; border: 1px solid var(--white); }
@@ -247,20 +268,17 @@ const STYLES = `
 
 .sl-faq { max-width: 780px; margin: 0 auto; border-top: 1px solid var(--black); }
 .sl-faq-row { border-bottom: 1px solid var(--black); }
-.sl-faq-btn {
-  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px 4px;
-  background: none; border: 0; cursor: pointer; text-align: left; color: var(--black);
-  font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1rem, 1.6vw, 1.15rem);
-  transition: padding 250ms ease;
-}
+.sl-faq-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px 4px; background: none; border: 0; cursor: pointer; text-align: left; color: var(--black); font-family: 'Bodoni Moda', serif; font-weight: 600; font-size: clamp(1rem, 1.6vw, 1.15rem); transition: padding 250ms ease; }
 .sl-faq-btn:hover { padding-left: 14px; }
 .sl-faq-btn i { font-style: normal; font-size: 1.8rem; transition: transform 300ms ease; }
 .sl-faq-btn[aria-expanded='true'] i { transform: rotate(45deg); }
 .sl-faq-body { overflow: hidden; }
 .sl-faq-body p { padding: 0 4px 24px; max-width: 44rem; color: var(--mid); font-weight: 300; }
 
-.sl-outro { text-align: center; }
+.sl-outro { position: relative; text-align: center; overflow: hidden; }
 .sl-outro .sl-prose { color: rgba(255, 255, 255, 0.75); }
+.sl-outro .sl-badge { position: absolute; left: 50%; top: 50%; width: min(440px, 80vw); margin: calc(min(440px, 80vw) / -2) 0 0 calc(min(440px, 80vw) / -2); opacity: 0.16; animation-duration: 36s; }
+.sl-outro .sl-section { position: relative; }
 
 .sl-contact { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--black); border-left: 1px solid var(--black); }
 .sl-contact a { padding: 22px; border-right: 1px solid var(--black); border-bottom: 1px solid var(--black); display: flex; flex-direction: column; gap: 4px; transition: background 300ms ease, color 300ms ease; }
@@ -273,14 +291,16 @@ const STYLES = `
 .sl-footer a:hover { color: var(--white); text-decoration: underline; }
 
 @media (max-width: 900px) {
-  .sl-duo, .sl-cols, .sl-trio, .sl-info, .sl-contact { grid-template-columns: 1fr; }
+  .sl-duo { flex-direction: column; min-height: 0; }
+  .sl-duo:hover .sl-founder, .sl-duo .sl-founder:hover { flex: 1; }
+  .sl-cols, .sl-trio, .sl-info, .sl-contact { grid-template-columns: 1fr; }
   .sl-founder + .sl-founder, .sl-trio > div + div { border-left: 0; border-top: 1px solid var(--black); }
-  .sl-masonry { columns: 2; }
+  .sl-badge { top: 84px; right: 18px; }
+  .sl-stack-card { position: relative; top: auto !important; height: 260px; }
 }
-@media (max-width: 520px) { .sl-masonry { columns: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .sl *, .sl *::before { transition-duration: 0.01ms !important; }
-  .sl-strip-track { animation: none; }
+  .sl-strip-track, .sl-badge { animation: none; }
 }
 `
 
@@ -308,42 +328,61 @@ function Head({ title, sub }) {
   )
 }
 
-function Hero() {
-  const { scrollY } = useScroll()
-  const y = useTransform(scrollY, [0, 600], [0, 70])
+function Cursor() {
+  const x = useMotionValue(-100)
+  const y = useMotionValue(-100)
+  const sx = useSpring(x, { stiffness: 500, damping: 40, mass: 0.3 })
+  const sy = useSpring(y, { stiffness: 500, damping: 40, mass: 0.3 })
+  const [big, setBig] = useState(false)
+
+  useEffect(() => {
+    const move = e => {
+      x.set(e.clientX)
+      y.set(e.clientY)
+    }
+    const over = e => setBig(!!e.target.closest?.('a, button'))
+    window.addEventListener('pointermove', move, { passive: true })
+    window.addEventListener('pointerover', over, { passive: true })
+    return () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerover', over)
+    }
+  }, [x, y])
+
+  return <motion.div className="sl-cursor" style={{ x: sx, y: sy }} animate={{ scale: big ? 3.6 : 1 }} transition={{ duration: 0.25 }} aria-hidden="true" />
+}
+
+function Curtain() {
   return (
-    <section className="sl-hero">
-      <motion.div className="sl-hero-inner" style={{ y }}>
-        <motion.img
-          className="sl-logo"
-          src="/logos/sports-lifestyle.png"
-          alt="R&R Sport & Lifestyle"
-          initial={{ opacity: 0, clipPath: 'inset(0 50% 0 50%)' }}
-          animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0%)' }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-        />
-        <motion.p className="sl-tagline" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.8 }}>
-          Own the look, own the moment
-        </motion.p>
-        <motion.p className="sl-lede" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2, duration: 0.8 }}>
-          Sportswear and lifestyle apparel for men, women, kids and babies. Shop online, delivered locally and internationally.
-        </motion.p>
-        <motion.div className="sl-cta" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4, duration: 0.8 }}>
-          <a href={STORE_URL} target="_blank" rel="noreferrer" className="sl-btn sl-btn-solid">Shop the online store</a>
-          <a href="#gallery" className="sl-btn sl-btn-line">See the gallery</a>
-        </motion.div>
+    <motion.div className="sl-curtain" initial={{ opacity: 1 }} animate={{ opacity: 1 }} exit={{ opacity: 1 }} aria-hidden="true">
+      <motion.div className="sl-curtain-word" initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 1, 0] }} transition={{ duration: 1.5, times: [0, 0.3, 0.75, 1] }}>
+        R&amp;R
       </motion.div>
-      <motion.div className="sl-scroll" animate={{ y: [0, 8, 0] }} transition={{ duration: 1.8, repeat: Infinity }}>
-        scroll ↓
-      </motion.div>
-    </section>
+      <motion.div className="sl-curtain-half top" initial={{ y: 0 }} animate={{ y: '-101%' }} transition={{ delay: 1.3, duration: 0.9, ease: [0.76, 0, 0.24, 1] }} />
+      <motion.div className="sl-curtain-half bottom" initial={{ y: 0 }} animate={{ y: '101%' }} transition={{ delay: 1.3, duration: 0.9, ease: [0.76, 0, 0.24, 1] }} />
+    </motion.div>
   )
 }
 
-function Strip() {
-  const row = [...ticker, ...ticker]
+function Badge({ id, text }) {
+  const path = 'M100,100 m-72,0 a72,72 0 1,1 144,0 a72,72 0 1,1 -144,0'
   return (
-    <div className="sl-strip" aria-hidden="true">
+    <svg className="sl-badge" viewBox="0 0 200 200" aria-hidden="true">
+      <defs>
+        <path id={id} d={path} />
+      </defs>
+      <text>
+        <textPath href={`#${id}`}>{text}</textPath>
+      </text>
+      <text className="sl-badge-star" x="100" y="112" textAnchor="middle">✦</text>
+    </svg>
+  )
+}
+
+function Marquee({ className, items }) {
+  const row = [...items, ...items]
+  return (
+    <div className={`sl-strip ${className}`} aria-hidden="true">
       <div className="sl-strip-track">
         {[0, 1].map(k => (
           <div className="sl-strip-item" key={k}>
@@ -360,10 +399,130 @@ function Strip() {
   )
 }
 
+function Hero() {
+  const wrapRef = useRef(null)
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const rx = useSpring(useTransform(my, [-0.5, 0.5], [9, -9]), { stiffness: 120, damping: 18 })
+  const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-12, 12]), { stiffness: 120, damping: 18 })
+  const { scrollY } = useScroll()
+  const y = useTransform(scrollY, [0, 600], [0, 70])
+  const v = useSpring(useVelocity(scrollY), { damping: 50, stiffness: 400 })
+  const skew = useTransform(v, [-2000, 2000], [-7, 7])
+
+  const onMove = e => {
+    const r = e.currentTarget.getBoundingClientRect()
+    mx.set((e.clientX - r.left) / r.width - 0.5)
+    my.set((e.clientY - r.top) / r.height - 0.5)
+  }
+
+  return (
+    <section className="sl-hero" onPointerMove={onMove}>
+      <Badge id="sl-badge-hero" text="OWN THE LOOK ✦ OWN THE MOMENT ✦ " />
+      <motion.div className="sl-hero-inner" style={{ y }}>
+        <motion.div className="sl-logo-wrap" ref={wrapRef} style={{ rotateX: rx, rotateY: ry }}>
+          <motion.img
+            className="sl-logo"
+            src="/logos/sports-lifestyle.png"
+            alt="R&R Sport & Lifestyle"
+            initial={{ opacity: 0, clipPath: 'inset(0 50% 0 50%)' }}
+            animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0%)' }}
+            transition={{ delay: 2, duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
+          />
+        </motion.div>
+        <motion.p className="sl-tagline" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.8, duration: 0.8 }}>
+          Own the look, own the moment
+        </motion.p>
+        <motion.p className="sl-lede" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 3, duration: 0.8 }}>
+          Sportswear and lifestyle apparel for men, women, kids and babies. Shop online, delivered locally and internationally.
+        </motion.p>
+        <motion.div className="sl-cta" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 3.2, duration: 0.8 }}>
+          <a href={STORE_URL} target="_blank" rel="noreferrer" className="sl-btn sl-btn-solid">Shop the online store</a>
+          <a href="#gallery" className="sl-btn sl-btn-line">See the gallery</a>
+        </motion.div>
+      </motion.div>
+      <div className="sl-hero-scroll" aria-hidden="true">scroll ↓</div>
+      <motion.div className="sl-marquees" style={{ skewX: skew }}>
+        <Marquee className="sl-strip-a sl-strip-outline" items={['Sportswear', 'Lifestyle', 'Luxury', 'Limited editions']} />
+        <Marquee className="sl-strip-b" items={['Men', 'Women', 'Kids', 'Babies', 'Kids\' underwear']} />
+      </motion.div>
+    </section>
+  )
+}
+
+function Word({ word, progress, range }) {
+  const opacity = useTransform(progress, range, [0.14, 1])
+  return <motion.span style={{ opacity }}>{word}</motion.span>
+}
+
+function Statement() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.45'] })
+  const words = statement.split(' ')
+  return (
+    <section className="sl-section">
+      <Head title="Built for movement, designed for life" sub="Brand philosophy" />
+      <p className="sl-reveal" ref={ref}>
+        {words.map((w, i) => (
+          <Word key={i} word={w} progress={scrollYProgress} range={[i / words.length, Math.min(1, (i + 1.5) / words.length)]} />
+        ))}
+      </p>
+      <Reveal>
+        <p className="sl-prose" style={{ marginTop: '2rem' }}>
+          Every piece in our collection is designed with technical precision and contemporary aesthetics in mind. From the
+          gym to the street, our apparel transitions seamlessly through your active lifestyle.
+        </p>
+      </Reveal>
+    </section>
+  )
+}
+
+function RangeStack() {
+  return (
+    <div className="sl-grey">
+      <section className="sl-section">
+        <Head title="Who we dress" sub="Apparel for the whole family, sold online" />
+        <div className="sl-stack">
+          {range.map((r, i) => (
+            <div className={`sl-stack-card ${i % 2 ? 'dark' : 'light'}`} key={r} style={{ top: 78 + i * 16 }}>
+              <div className="sl-stack-top">
+                <span>R&amp;R SPORT &amp; LIFESTYLE</span>
+                <span>ONLINE</span>
+              </div>
+              <div className="sl-word-big">{r}</div>
+              <div className="sl-stack-foot">
+                <span>Delivered locally and internationally</span>
+                <a href={STORE_URL} target="_blank" rel="noreferrer" className="sl-btn"><span>Shop {r}</span></a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
 function Gallery() {
   const [failed, setFailed] = useState([])
   const [active, setActive] = useState(-1)
+  const [limit, setLimit] = useState(0)
+  const railRef = useRef(null)
+  const wrapRef = useRef(null)
+  const dragged = useRef(false)
   const visible = galleryImages.filter(img => !failed.includes(img.src))
+
+  useEffect(() => {
+    const measure = () => {
+      if (railRef.current && wrapRef.current) setLimit(Math.max(0, railRef.current.scrollWidth - wrapRef.current.clientWidth))
+    }
+    measure()
+    const t = setTimeout(measure, 800)
+    window.addEventListener('resize', measure)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('resize', measure)
+    }
+  }, [failed])
 
   useEffect(() => {
     if (active < 0) return undefined
@@ -378,57 +537,39 @@ function Gallery() {
 
   return (
     <div className="sl-dark" id="gallery">
-      <section className="sl-section">
-        <Head title="Our gallery" sub="The latest pieces. Hover for colour, tap to enlarge." />
-        {visible.length === 0 && <p className="sl-empty">New product photos are on the way.</p>}
-        <div className="sl-masonry">
-          {galleryImages.map((img, i) => {
+      <section className="sl-section" style={{ paddingBottom: 0 }}>
+        <Head title="Our gallery" sub="The latest pieces" />
+      </section>
+      {visible.length === 0 && <p className="sl-empty">New product photos are on the way.</p>}
+      <div className="sl-lookbook" ref={wrapRef}>
+        <motion.div className="sl-rail" ref={railRef} drag="x" dragConstraints={{ left: -limit, right: 0 }} dragElastic={0.12} onDragStart={() => { dragged.current = true }} onDragEnd={() => { setTimeout(() => { dragged.current = false }, 60) }}>
+          {galleryImages.map(img => {
             if (failed.includes(img.src)) return null
             const idx = visible.findIndex(v => v.src === img.src)
             return (
-              <motion.button
+              <button
                 type="button"
                 className="sl-tile"
                 key={img.src}
                 aria-label={`Enlarge ${img.alt}`}
-                onClick={() => setActive(idx)}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.15 }}
-                transition={{ duration: 0.5, delay: (i % 3) * 0.08 }}
+                onClick={() => { if (!dragged.current) setActive(idx) }}
               >
-                <img src={img.src} alt={img.alt} loading="lazy" onError={() => setFailed(f => [...f, img.src])} />
-              </motion.button>
+                <img src={img.src} alt={img.alt} draggable={false} onError={() => setFailed(f => [...f, img.src])} />
+              </button>
             )
           })}
-        </div>
-        <AnimatePresence>
-          {active >= 0 && visible[active] && (
-            <motion.div
-              className="sl-lightbox"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Product photo"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setActive(-1)}
-            >
-              <button type="button" className="sl-nav prev" aria-label="Previous photo" onClick={e => { e.stopPropagation(); setActive((active - 1 + visible.length) % visible.length) }}>‹</button>
-              <motion.img
-                key={visible[active].src}
-                src={visible[active].src}
-                alt={visible[active].alt}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                onClick={e => e.stopPropagation()}
-              />
-              <button type="button" className="sl-nav next" aria-label="Next photo" onClick={e => { e.stopPropagation(); setActive((active + 1) % visible.length) }}>›</button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </section>
+        </motion.div>
+      </div>
+      <p className="sl-hint" style={{ paddingBottom: 60 }}>DRAG TO EXPLORE · HOVER FOR COLOUR · TAP TO ENLARGE</p>
+      <AnimatePresence>
+        {active >= 0 && visible[active] && (
+          <motion.div className="sl-lightbox" role="dialog" aria-modal="true" aria-label="Product photo" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActive(-1)}>
+            <button type="button" className="sl-nav prev" aria-label="Previous photo" onClick={e => { e.stopPropagation(); setActive((active - 1 + visible.length) % visible.length) }}>‹</button>
+            <motion.img key={visible[active].src} src={visible[active].src} alt={visible[active].alt} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }} onClick={e => e.stopPropagation()} />
+            <button type="button" className="sl-nav next" aria-label="Next photo" onClick={e => { e.stopPropagation(); setActive((active + 1) % visible.length) }}>›</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -445,13 +586,7 @@ function Faq() {
           </button>
           <AnimatePresence initial={false}>
             {open === i && (
-              <motion.div
-                className="sl-faq-body"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              >
+              <motion.div className="sl-faq-body" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
                 <p>{f.a}</p>
               </motion.div>
             )}
@@ -463,52 +598,27 @@ function Faq() {
 }
 
 export default function SportsLifestyle() {
-  const rootRef = useRef(null)
+  const [intro, setIntro] = useState(true)
   const { scrollYProgress } = useScroll()
   const bar = useSpring(scrollYProgress, { stiffness: 100, damping: 26, mass: 0.4 })
 
+  useEffect(() => {
+    const t = setTimeout(() => setIntro(false), 2400)
+    return () => clearTimeout(t)
+  }, [])
+
   return (
-    <div className="sl" ref={rootRef}>
+    <div className="sl">
       <style>{STYLES}</style>
+      <Cursor />
+      {intro && <Curtain />}
       <motion.div className="sl-bar" style={{ scaleX: bar }} />
       <Link to="/" className="sl-back">← Back to hub</Link>
 
       <main>
         <Hero />
-        <Strip />
-
-        <section className="sl-section">
-          <Head title="Built for movement, designed for life" sub="Brand philosophy" />
-          <Reveal>
-            <p className="sl-prose">
-              R&R Sports & Lifestyle is our answer to the modern athlete and lifestyle enthusiast who demands more from their
-              apparel. We believe that performance wear shouldn't sacrifice style, and street fashion shouldn't compromise on
-              functionality.
-            </p>
-            <p className="sl-prose">
-              Every piece in our collection is designed with technical precision and contemporary aesthetics in mind. From the
-              gym to the street, our apparel transitions seamlessly through your active lifestyle.
-            </p>
-          </Reveal>
-        </section>
-
-        <div className="sl-grey">
-          <section className="sl-section">
-            <Head title="Who we dress" sub="Apparel for the whole family, sold online" />
-            <Reveal>
-              <ul className="sl-range">
-                {range.map(r => (
-                  <li key={r}>
-                    <a href={STORE_URL} target="_blank" rel="noreferrer">
-                      {r}
-                      <span>Shop now</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
-          </section>
-        </div>
+        <Statement />
+        <RangeStack />
 
         <section className="sl-section">
           <Head title="Where sport meets style" sub="Our story" />
@@ -549,14 +659,7 @@ export default function SportsLifestyle() {
                 <h3 className="sl-group">{c.group}</h3>
                 <div className="sl-cols">
                   {c.items.map((item, i) => (
-                    <motion.div
-                      className="sl-card"
-                      key={item.title}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.3 }}
-                      transition={{ duration: 0.5, delay: i * 0.1 }}
-                    >
+                    <motion.div className="sl-card" key={item.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.5, delay: i * 0.1 }}>
                       <p className="sl-tag">{item.tag}</p>
                       <h3>{item.title}</h3>
                       <p>{item.desc}</p>
@@ -613,6 +716,7 @@ export default function SportsLifestyle() {
         </section>
 
         <div className="sl-dark sl-outro">
+          <Badge id="sl-badge-outro" text="R&R SPORT & LIFESTYLE ✦ SHOP ONLINE ✦ " />
           <section className="sl-section">
             <Head title="Experience the R&R difference" />
             <Reveal>
@@ -631,30 +735,12 @@ export default function SportsLifestyle() {
           <Head title="Get in touch" sub="Online only. Support is available 24/7." />
           <Reveal>
             <div className="sl-contact">
-              <a href="tel:0813365266">
-                <h3>Phone</h3>
-                <span>081 336 5266</span>
-              </a>
-              <a href="mailto:info@rragencies.co.za">
-                <h3>Email</h3>
-                <span>info@rragencies.co.za</span>
-              </a>
-              <a href="https://wa.me/27813365266" target="_blank" rel="noreferrer">
-                <h3>WhatsApp</h3>
-                <span>Message us on 081 336 5266</span>
-              </a>
-              <a href="https://www.instagram.com/randragencies" target="_blank" rel="noreferrer">
-                <h3>Instagram</h3>
-                <span>@randragencies</span>
-              </a>
-              <a href="https://www.tiktok.com/@randragencies" target="_blank" rel="noreferrer">
-                <h3>TikTok</h3>
-                <span>@randragencies</span>
-              </a>
-              <a href={STORE_URL} target="_blank" rel="noreferrer">
-                <h3>Online store</h3>
-                <span>www.randragencies.online</span>
-              </a>
+              <a href="tel:0813365266"><h3>Phone</h3><span>081 336 5266</span></a>
+              <a href="mailto:info@rragencies.co.za"><h3>Email</h3><span>info@rragencies.co.za</span></a>
+              <a href="https://wa.me/27813365266" target="_blank" rel="noreferrer"><h3>WhatsApp</h3><span>Message us on 081 336 5266</span></a>
+              <a href="https://www.instagram.com/randragencies" target="_blank" rel="noreferrer"><h3>Instagram</h3><span>@randragencies</span></a>
+              <a href="https://www.tiktok.com/@randragencies" target="_blank" rel="noreferrer"><h3>TikTok</h3><span>@randragencies</span></a>
+              <a href={STORE_URL} target="_blank" rel="noreferrer"><h3>Online store</h3><span>www.randragencies.online</span></a>
             </div>
           </Reveal>
         </section>
