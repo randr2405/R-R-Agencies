@@ -104,14 +104,72 @@ const STYLES = `
   user-select: none;
 }
 
+.hub-heading {
+  position: absolute;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+.hub-heading-title {
+  margin: 0;
+  font-family: 'Pinyon Script', 'Snell Roundhand', 'Apple Chancery', cursive;
+  font-weight: 400;
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 2px 24px color-mix(in srgb, var(--accent, #fff) 55%, transparent);
+  transition: text-shadow 0.9s ease;
+}
+
+.hub-heading-rule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  color: var(--accent, #fff);
+  transition: color 0.9s ease;
+}
+
+.hub-heading-rule::before,
+.hub-heading-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, currentColor);
+  opacity: 0.7;
+}
+
+.hub-heading-rule::after {
+  background: linear-gradient(270deg, transparent, currentColor);
+}
+
+.hub-heading-rule i {
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  transform: rotate(45deg);
+  box-shadow: 0 0 12px currentColor;
+}
+
 .hub-hint {
   position: absolute;
-  top: 2.1rem;
+  top: 6.6rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
   font-style: italic;
-  font-size: 1.1rem;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   opacity: 0.55;
   user-select: none;
@@ -242,7 +300,7 @@ const STYLES = `
   .face-title.inactive {
     left: 50%;
     right: auto;
-    top: 16%;
+    top: 24%;
     max-width: 90vw;
     text-align: center;
     font-size: 2.8rem;
@@ -252,6 +310,14 @@ const STYLES = `
   .face-title::after {
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .hub-heading {
+    top: 1.2rem;
+  }
+
+  .hub-heading-title {
+    font-size: 2rem;
   }
 
   .hub-hint {
@@ -1331,6 +1397,12 @@ function InfiniteMenu({ items, scale = 1.0, backgroundColor = BACKGROUND, onSele
       <div className="hub-glow" />
       <div className="hub-frame" />
       <div className="hub-brand">R&R</div>
+      <div className="hub-heading">
+        <h1 className="hub-heading-title">Our company profiles</h1>
+        <div className="hub-heading-rule" aria-hidden="true">
+          <i />
+        </div>
+      </div>
       <div className="hub-hint">Drag to explore</div>
       <div className="hub-dots" aria-hidden="true">
         {items.map(item => {
