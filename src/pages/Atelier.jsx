@@ -94,6 +94,7 @@ const hours = [
   { day: 'Thursday', time: '9am – 5pm' },
   { day: 'Friday', time: '9am – 5pm' },
   { day: 'Saturday', time: '9am – 5pm' },
+  { day: 'Sunday', time: 'Closed' },
 ]
 
 const policies = [
@@ -987,6 +988,7 @@ const STYLES = `
 .at-hours li { position: relative; display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgba(240, 212, 137, 0.18); }
 .at-hours li:last-child { border-bottom: 0; }
 .at-hours li span:last-child { color: var(--muted-light); }
+.at-hours-note { position: relative; margin-top: 1rem; font-size: 0.92rem; color: var(--gold-light); }
 
 .at-menu-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px; }
 .at-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2.8rem; }
@@ -1186,6 +1188,7 @@ function About() {
                 </li>
               ))}
             </ul>
+            <p className="at-hours-note">Open as usual on public holidays.</p>
           </div>
         </div>
       </section>
@@ -1307,7 +1310,7 @@ function Book() {
           </ul>
           <div className="at-book-cta">
             <h3>See you soon</h3>
-            <p>Monday to Saturday, 9am – 5pm.</p>
+            <p>Monday to Saturday, 9am – 5pm. Closed Sundays, open as usual on public holidays.</p>
             <address>
               Shop 7, The Quartz, 45 Zenith Dr
               <span>Umhlanga, Durban, 4319</span>
