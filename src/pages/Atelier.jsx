@@ -19,12 +19,14 @@ const MAPS_URL =
 const GALLERY_FONT_URL = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap'
 
 const galleryItems = [
-  { image: '/atelier/nail1.png', text: 'Rubber Base Gel' },
-  { image: '/atelier/nail2.png', text: 'Acrylic Overlay' },
-  { image: '/atelier/nail3.png', text: 'Cat Eye' },
-  { image: '/atelier/nail4.png', text: 'Chrome' },
-  { image: '/atelier/nail5.png', text: 'Ombre' },
+  { image: '/atelier/nail1.png', text: 'Classic French' },
+  { image: '/atelier/nail2.png', text: 'Natural nails' },
+  { image: '/atelier/nail3.png', text: 'Chrome nails' },
+  { image: '/atelier/nail4.png', text: 'Almond nails' },
+  { image: '/atelier/nail5.png', text: 'Classic with tips' },
   { image: '/atelier/nail6.png', text: 'Nail Art' },
+  { image: '/atelier/nail7.png', text: 'Gel Toes' },
+
 ]
 
 const nailServices = [
