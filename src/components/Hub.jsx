@@ -87,6 +87,7 @@ const STYLES = `
   height: 100%;
   overflow: hidden;
   outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #infinite-grid-menu-canvas:active {
@@ -258,6 +259,7 @@ const STYLES = `
   border: 5px solid var(--infinite-menu-background, #000);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 0 10px 44px color-mix(in srgb, var(--accent, #5227ff) 55%, transparent);
   color: #fff;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .action-button:focus-visible {
@@ -294,17 +296,22 @@ const STYLES = `
   font-size: 26px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (max-aspect-ratio: 1/1) {
   .face-title,
   .face-title.active,
   .face-title.inactive {
     left: 50%;
     right: auto;
-    top: 24%;
-    max-width: 90vw;
+    top: auto;
+    bottom: calc(50% - 2.5rem + 37vw);
+    max-width: 92vw;
     text-align: center;
-    font-size: 2.8rem;
+    font-size: clamp(2rem, 8.5vw, 3.4rem);
     transform: translate(-50%, 0);
+  }
+
+  #infinite-grid-menu-canvas {
+    top: 2.5rem;
   }
 
   .face-title::after {
@@ -317,16 +324,20 @@ const STYLES = `
   }
 
   .hub-heading-title {
-    font-size: 2rem;
+    font-size: clamp(1.8rem, 6vw, 2.6rem);
   }
 
   .hub-hint {
     top: auto;
-    bottom: 1.8rem;
+    bottom: calc(1.8rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .action-button.active {
+    bottom: calc(4.6rem + env(safe-area-inset-bottom, 0px));
   }
 
   .hub-brand {
-    left: 1.6rem;
+    display: none;
   }
 
   .hub-dots {
@@ -335,6 +346,47 @@ const STYLES = `
 
   .hub-frame {
     inset: 8px;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .hub-heading {
+    top: 0.9rem;
+  }
+
+  .hub-heading-title {
+    font-size: 1.6rem;
+  }
+
+  .hub-brand {
+    top: 1rem;
+    left: 1.6rem;
+    font-size: 1.2rem;
+  }
+
+  .hub-hint {
+    display: none;
+  }
+
+  .hub-dots {
+    right: 1.4rem;
+  }
+
+  .face-title {
+    font-size: 2.2rem;
+  }
+
+  .action-button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .action-button.active {
+    bottom: 1.4rem;
+  }
+
+  .action-button-icon {
+    font-size: 20px;
   }
 }
 
@@ -1376,10 +1428,12 @@ function InfiniteMenu({ items, scale = 1.0, backgroundColor = BACKGROUND, onSele
     }
 
     window.addEventListener('resize', handleResize)
+    window.addEventListener('orientationchange', handleResize)
     handleResize()
 
     return () => {
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleResize)
       if (sketch) sketch.destroy()
     }
   }, [items, scale])
