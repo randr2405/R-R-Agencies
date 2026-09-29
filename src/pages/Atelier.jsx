@@ -26,7 +26,6 @@ const galleryItems = [
   { image: '/atelier/nail5.png', text: 'Classic with tips' },
   { image: '/atelier/nail6.png', text: 'Nail Art' },
   { image: '/atelier/nail7.png', text: 'Gel Toes' },
-
 ]
 
 const nailServices = [
@@ -103,14 +102,6 @@ const policies = [
   { title: 'Deposits', desc: 'None required.' },
   { title: 'Cancellations', desc: 'Please give us 24 hours notice.' },
   { title: 'Payment', desc: 'Cash or card.' },
-]
-
-const swatches = [
-  { cls: 'gel', label: 'Rubber base' },
-  { cls: 'chrome', label: 'Chrome' },
-  { cls: 'cat', label: 'Cat eye' },
-  { cls: 'ombre', label: 'Ombre' },
-  { cls: 'foil', label: 'Foil' },
 ]
 
 const ticker = ['Rubber Base Gel', 'Acrylic Overlay', 'Cat Eye', 'Chrome', 'Ombre', 'Manicures', 'Pedicures', 'Nail Art', 'Gel Toes']
@@ -968,24 +959,6 @@ const STYLES = `
 .at-btn-purple { background: linear-gradient(120deg, var(--purple), var(--orchid)); color: #fff; box-shadow: 0 10px 30px rgba(122, 31, 209, 0.35); }
 .at-btn-purple:hover { box-shadow: 0 16px 40px rgba(122, 31, 209, 0.5); }
 
-.at-nails { margin-top: 3.4rem; display: flex; gap: clamp(14px, 3.4vw, 34px); justify-content: center; align-items: flex-end; flex-wrap: wrap; }
-.at-nail-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.at-nail-wrap:nth-child(odd) { margin-bottom: 18px; }
-.at-nail {
-  position: relative; width: clamp(46px, 7vw, 68px); height: clamp(70px, 10.5vw, 102px);
-  border-radius: 999px 999px 22px 22px / 60% 60% 22px 22px; overflow: hidden;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45), inset 0 -8px 14px rgba(0, 0, 0, 0.22);
-}
-.at-nail::after {
-  content: ''; position: absolute; top: 8%; left: 18%; width: 22%; height: 46%; border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
-}
-.at-nail.gel { background: linear-gradient(160deg, #c79bff, var(--purple) 60%, #4b1287); }
-.at-nail.chrome { background: linear-gradient(135deg, #fafafd, #9494a6 38%, #f2f2f7 58%, #72728a); }
-.at-nail.cat { background: linear-gradient(112deg, #2a0f4a 28%, #c9a0ff 47%, #2a0f4a 66%); }
-.at-nail.ombre { background: linear-gradient(0deg, #ff9fd0, var(--purple)); }
-.at-nail.foil { background: linear-gradient(135deg, #f7e3a1, var(--gold) 45%, #f0d489 70%, #a87517); }
-.at-nail-label { font-size: 0.82rem; color: #fff; letter-spacing: 0.02em; text-shadow: 0 2px 10px rgba(12, 4, 24, 0.95); }
 .at-scroll { position: absolute; bottom: 24px; left: 50%; translate: -50% 0; color: var(--gold-light); font-weight: 500; font-size: 0.9rem; }
 .at-spark { position: absolute; color: var(--gold-light); pointer-events: none; }
 
@@ -1160,23 +1133,6 @@ function Hero() {
           <a href="#book" className="at-btn at-btn-gold">Book an appointment</a>
           <a href="#menu" className="at-btn at-btn-ghost">View the menu</a>
         </motion.div>
-        <div className="at-nails" aria-hidden="true">
-          {swatches.map((s, i) => (
-            <motion.div
-              className="at-nail-wrap"
-              key={s.cls}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: [0, -10, 0] }}
-              transition={{
-                opacity: { delay: 1.7 + i * 0.1, duration: 0.6 },
-                y: { delay: 1.7 + i * 0.1, duration: 4 + i * 0.4, repeat: Infinity, ease: 'easeInOut' },
-              }}
-            >
-              <div className={`at-nail ${s.cls}`} />
-              <span className="at-nail-label">{s.label}</span>
-            </motion.div>
-          ))}
-        </div>
       </div>
       <motion.div className="at-scroll" animate={{ y: [0, 10, 0] }} transition={{ duration: 1.8, repeat: Infinity }}>
         scroll ↓
