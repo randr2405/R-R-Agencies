@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
+import { AnimatePresence, animate, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
 const NAVY = '#1b3a72'
@@ -116,6 +116,20 @@ const faqs = [
     a: 'Every project gets a custom quote based on your requirements, timeline and scope. We also offer installments so you can spread the cost.',
   },
 ]
+
+const ticker = ['Websites', 'E-commerce', 'Mobile apps', 'Custom software', 'Hosting', 'Domains', 'Business email', 'SSL', 'Integrations', '24/7 support']
+
+const termLines = [
+  { t: '$ discover --business', c: 'cmd' },
+  { t: '✓ goals mapped', c: 'ok' },
+  { t: '$ build --site', c: 'cmd' },
+  { t: '✓ pages compiled', c: 'ok' },
+  { t: '$ host --ssl --email', c: 'cmd' },
+  { t: '✓ live and secure', c: 'ok' },
+  { t: '$ grow', c: 'cmd' },
+]
+
+const statusRows = ['Website', 'SSL certificate', 'Business email', 'Domain']
 
 const FALLBACK_RGB = { r: 255, g: 255, b: 255 }
 
@@ -257,7 +271,7 @@ function LetterGlitch({
     if (needsRedraw) drawLetters()
   }
 
-  const animate = () => {
+  const animateLoop = () => {
     const now = Date.now()
     if (now - lastGlitchTime.current >= glitchSpeed) {
       updateLetters()
@@ -265,7 +279,7 @@ function LetterGlitch({
       lastGlitchTime.current = now
     }
     if (smooth) handleSmoothTransitions()
-    animationRef.current = requestAnimationFrame(animate)
+    animationRef.current = requestAnimationFrame(animateLoop)
   }
 
   useEffect(() => {
@@ -274,7 +288,7 @@ function LetterGlitch({
 
     context.current = canvas.getContext('2d')
     resizeCanvas()
-    animate()
+    animateLoop()
 
     let resizeTimeout
     const handleResize = () => {
@@ -282,7 +296,7 @@ function LetterGlitch({
       resizeTimeout = setTimeout(() => {
         cancelAnimationFrame(animationRef.current)
         resizeCanvas()
-        animate()
+        animateLoop()
       }, 100)
     }
     window.addEventListener('resize', handleResize)
@@ -311,7 +325,7 @@ function LetterGlitch({
 }
 
 const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 .ss {
   --navy: ${NAVY};
@@ -354,22 +368,37 @@ const STYLES = `
 }
 .ss-back:hover { transform: translateX(-3px); border-color: var(--sky); }
 
+.ss-rail { position: fixed; right: 16px; top: 16vh; bottom: 16vh; width: 20px; z-index: 50; pointer-events: none; }
+.ss-rail svg { position: absolute; inset: 0; width: 20px; height: 100%; overflow: visible; }
+.ss-rail-track { stroke: rgba(45, 168, 224, 0.28); stroke-width: 2; stroke-dasharray: 3 8; stroke-linecap: round; }
+.ss-rail-live { stroke: var(--sky); stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(45, 168, 224, 0.9)); }
+.ss-needle {
+  position: absolute; left: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 4px rgba(45, 168, 224, 0.3), 0 0 18px 4px rgba(45, 168, 224, 0.8);
+}
+@media (max-width: 900px) { .ss-rail { display: none; } }
+
 .ss-hero {
   position: relative; min-height: 100vh; display: grid; align-items: center; overflow: hidden; isolation: isolate;
-  padding: 96px clamp(20px, 5vw, 64px) 72px; background: var(--hero-bg); color: #fff;
+  padding: 96px clamp(20px, 5vw, 64px) 84px; background: var(--hero-bg); color: #fff;
 }
-.ss-hero-bg { position: absolute; inset: 0; z-index: -2; overflow: hidden; }
+.ss-hero-bg { position: absolute; inset: 0; z-index: -3; overflow: hidden; }
+.ss-hero-glow {
+  position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background: radial-gradient(560px circle at var(--mx, 70%) var(--my, 40%), rgba(45, 168, 224, 0.34), transparent 70%);
+}
 .ss-hero-shade {
   position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(10, 26, 60, 0.82) 0%, rgba(10, 26, 60, 0.55) 45%, rgba(10, 26, 60, 0.15) 100%),
-    linear-gradient(180deg, rgba(10, 26, 60, 0.35) 0%, transparent 30%, rgba(10, 26, 60, 0.75) 100%);
+    linear-gradient(90deg, rgba(10, 26, 60, 0.86) 0%, rgba(10, 26, 60, 0.55) 45%, rgba(10, 26, 60, 0.15) 100%),
+    linear-gradient(180deg, rgba(10, 26, 60, 0.35) 0%, transparent 30%, rgba(10, 26, 60, 0.8) 100%);
 }
-.ss-hero-grid { max-width: 1120px; width: 100%; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: clamp(24px, 5vw, 60px); align-items: center; }
+.ss-hero-grid { max-width: 1120px; width: 100%; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(24px, 5vw, 60px); align-items: center; }
 .ss-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sky-light); }
 .ss-eyebrow::before { content: ''; width: 28px; height: 2px; background: var(--sky); }
 .ss-title { margin-top: 0.8rem; font-family: 'Sora', sans-serif; font-weight: 800; font-size: clamp(2.4rem, 5.2vw, 4.2rem); line-height: 1.04; letter-spacing: -0.03em; color: #fff; text-shadow: 0 4px 30px rgba(10, 26, 60, 0.6); }
-.ss-title span { display: block; color: #b9bec7; }
+.ss-title span { display: block; background: linear-gradient(100deg, #fff 10%, var(--sky-light) 45%, #b9bec7 90%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: ss-sheen 6s ease-in-out infinite; }
+@keyframes ss-sheen { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
 .ss-slogan { margin-top: 1rem; font-family: 'Sora', sans-serif; font-weight: 600; font-size: clamp(1rem, 1.8vw, 1.35rem); color: #fff; }
 .ss-slogan b { color: var(--sky); font-weight: 700; }
 .ss-lede { margin-top: 0.9rem; max-width: 30rem; font-size: clamp(0.92rem, 1.2vw, 1.02rem); color: rgba(232, 242, 252, 0.85); }
@@ -384,20 +413,39 @@ const STYLES = `
 .ss-btn-sky:hover { box-shadow: 0 16px 40px rgba(45, 168, 224, 0.5); }
 .ss-btn-ghost-light { color: #fff; border-color: rgba(255, 255, 255, 0.5); background: rgba(10, 26, 60, 0.4); }
 .ss-btn-ghost-light:hover { background: rgba(255, 255, 255, 0.14); }
+
+.ss-stage { position: relative; justify-self: center; width: 100%; max-width: 400px; padding-bottom: 60px; }
 .ss-logo-card {
-  position: relative; justify-self: center; width: 100%; max-width: 340px; padding: 18px; border-radius: 28px; background: #fff;
+  position: relative; width: 78%; margin: 0 auto 0 0; padding: 16px; border-radius: 26px; background: #fff;
   border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 30px 80px rgba(3, 10, 30, 0.55);
 }
-.ss-logo-card::before {
-  content: ''; position: absolute; inset: -12px; z-index: -1; border-radius: 36px;
-  border: 1px dashed rgba(143, 211, 244, 0.6);
-}
+.ss-logo-card::before { content: ''; position: absolute; inset: -12px; z-index: -1; border-radius: 34px; border: 1px dashed rgba(143, 211, 244, 0.6); }
 .ss-logo-card img { display: block; width: 100%; height: auto; }
+.ss-term {
+  position: absolute; right: 0; bottom: 0; width: 84%; border-radius: 16px; overflow: hidden;
+  background: rgba(6, 14, 36, 0.92); backdrop-filter: blur(14px);
+  border: 1px solid rgba(143, 211, 244, 0.4); box-shadow: 0 24px 60px rgba(3, 10, 30, 0.6), 0 0 40px rgba(45, 168, 224, 0.2);
+}
+.ss-term-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid rgba(143, 211, 244, 0.2); }
+.ss-term-bar i { width: 9px; height: 9px; border-radius: 50%; background: rgba(143, 211, 244, 0.35); }
+.ss-term-bar i:first-child { background: var(--sky); }
+.ss-term-bar span { margin-left: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted-light); }
+.ss-term-body { padding: 12px 14px 14px; min-height: 176px; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; line-height: 1.75; }
+.ss-term-body .cmd { color: #fff; }
+.ss-term-body .ok { color: var(--sky-light); }
+.ss-caret { display: inline-block; width: 7px; height: 13px; margin-left: 2px; vertical-align: -2px; background: var(--sky); animation: ss-blink 1s steps(1) infinite; }
+@keyframes ss-blink { 50% { opacity: 0; } }
 .ss-scroll { position: absolute; bottom: 18px; left: 50%; translate: -50% 0; color: var(--sky-light); font-weight: 700; font-size: 0.8rem; }
+
+.ss-strip { background: linear-gradient(90deg, var(--navy-deep), var(--navy)); color: #fff; overflow: hidden; border-block: 1px solid rgba(143, 211, 244, 0.25); }
+.ss-strip-track { display: flex; width: max-content; animation: ss-slide 40s linear infinite; }
+.ss-strip-item { display: flex; align-items: center; gap: 26px; padding: 13px 0 13px 26px; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1rem; white-space: nowrap; }
+.ss-strip-item i { font-style: normal; color: var(--sky); font-size: 0.8rem; }
+@keyframes ss-slide { to { transform: translateX(-50%); } }
 
 .ss-stats { background: #fff; border-bottom: 1px solid rgba(27, 58, 114, 0.12); }
 .ss-stats-in { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
-.ss-stat { padding: 24px clamp(14px, 2.4vw, 32px); border-right: 1px solid rgba(27, 58, 114, 0.12); }
+.ss-stat { padding: 26px clamp(14px, 2.4vw, 32px); border-right: 1px solid rgba(27, 58, 114, 0.12); }
 .ss-stat:last-child { border-right: 0; }
 .ss-stat strong { display: block; font-family: 'Sora', sans-serif; font-weight: 700; font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.1; color: var(--navy); }
 .ss-stat span { color: var(--muted); font-size: 0.85rem; }
@@ -408,19 +456,32 @@ const STYLES = `
 .ss-sub { margin-top: 1rem; color: var(--muted); max-width: 32rem; }
 .ss-tint { background: var(--mist); }
 .ss-navy { background: linear-gradient(160deg, var(--navy), var(--navy-deep)); color: #fff; position: relative; overflow: hidden; }
+.ss-navy::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+  background-image: radial-gradient(rgba(143, 211, 244, 0.22) 1px, transparent 1px); background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 40%, #000, transparent);
+}
+.ss-navy > * { position: relative; }
 .ss-navy .ss-h2 { color: #fff; }
 .ss-navy .ss-h2::after { background: linear-gradient(90deg, var(--sky), var(--sky-light)); }
 .ss-navy .ss-sub { color: var(--muted-light); }
+
+.ss-spot { position: relative; overflow: hidden; }
+.ss-spot::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 300ms ease;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(45, 168, 224, 0.22), transparent 70%);
+}
+.ss-spot:hover::after { opacity: 1; }
 
 .ss-serve { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 2.2rem; }
 .ss-serve-card {
   padding: 24px 22px; border-radius: 20px; background: #fff; border: 1px solid rgba(27, 58, 114, 0.14);
   box-shadow: 0 14px 40px rgba(15, 36, 80, 0.06);
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease, box-shadow 300ms ease;
+  transition: border-color 300ms ease, box-shadow 300ms ease;
 }
-.ss-serve-card:hover { transform: translateY(-5px); border-color: var(--sky); box-shadow: 0 22px 50px rgba(45, 168, 224, 0.18); }
+.ss-serve-card:hover { border-color: var(--sky); box-shadow: 0 22px 50px rgba(45, 168, 224, 0.18); }
 .ss-bars { display: flex; align-items: flex-end; gap: 4px; height: 28px; margin-bottom: 1rem; }
-.ss-bars i { width: 8px; border-radius: 3px; background: rgba(27, 58, 114, 0.15); }
+.ss-bars i { width: 8px; border-radius: 3px; background: rgba(27, 58, 114, 0.15); transform-origin: bottom; }
 .ss-bars i:nth-child(1) { height: 30%; }
 .ss-bars i:nth-child(2) { height: 65%; }
 .ss-bars i:nth-child(3) { height: 100%; }
@@ -428,15 +489,21 @@ const STYLES = `
 .ss-serve-card h3 { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.1rem; color: var(--navy); }
 .ss-serve-card p { margin-top: 0.35rem; color: var(--muted); }
 
-.ss-services { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 2.2rem; }
+.ss-services { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 2.2rem; perspective: 1000px; }
 .ss-service {
-  position: relative; padding: 24px 22px 22px; border-radius: 20px; background: #fff; overflow: hidden;
-  border: 1px solid rgba(27, 58, 114, 0.14);
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease;
+  position: relative; padding: 26px 22px 24px 26px; border-radius: 20px; background: #fff; overflow: hidden;
+  border: 1px solid rgba(27, 58, 114, 0.14); transform-style: preserve-3d; will-change: transform;
+  transition: border-color 300ms ease, box-shadow 300ms ease;
 }
 .ss-service::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, var(--sky), var(--navy)); }
-.ss-service:hover { transform: translateY(-4px); border-color: var(--sky); }
-.ss-service h3 { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.05rem; color: var(--navy); }
+.ss-service::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 300ms ease;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(45, 168, 224, 0.2), transparent 70%);
+}
+.ss-service:hover { border-color: var(--sky); box-shadow: 0 26px 50px rgba(45, 168, 224, 0.2); }
+.ss-service:hover::after { opacity: 1; }
+.ss-service-n { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--sky); }
+.ss-service h3 { margin-top: 0.3rem; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.05rem; color: var(--navy); }
 .ss-service p { margin-top: 0.4rem; color: var(--muted); }
 
 .ss-host { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(24px, 5vw, 70px); align-items: start; }
@@ -451,23 +518,42 @@ const STYLES = `
 .ss-host-item h3 { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1rem; color: var(--sky-light); }
 .ss-host-item p { margin-top: 0.35rem; color: var(--muted-light); font-size: 0.9rem; }
 .ss-note { margin-top: 1.1rem; color: var(--muted-light); font-size: 0.88rem; }
+.ss-status { margin-top: 1.6rem; max-width: 22rem; border-radius: 16px; background: rgba(6, 14, 36, 0.55); border: 1px solid rgba(143, 211, 244, 0.28); overflow: hidden; }
+.ss-status li { display: flex; align-items: center; gap: 12px; padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; border-bottom: 1px solid rgba(143, 211, 244, 0.14); }
+.ss-status li:last-child { border-bottom: 0; }
+.ss-status em { margin-left: auto; font-style: normal; color: var(--sky-light); }
+.ss-pulse { position: relative; width: 8px; height: 8px; border-radius: 50%; background: #5be3a4; flex: none; }
+.ss-pulse::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid #5be3a4; animation: ss-ping 2s ease-out infinite; }
+@keyframes ss-ping { from { transform: scale(0.6); opacity: 0.9; } to { transform: scale(1.8); opacity: 0; } }
 
-.ss-steps { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 2.6rem; }
-.ss-steps::before {
-  content: ''; position: absolute; left: 0; right: 0; top: 21px; height: 2px;
-  background: repeating-linear-gradient(90deg, rgba(45, 168, 224, 0.7) 0 10px, transparent 10px 18px);
+.ss-process { position: relative; height: 300vh; background: var(--hero-bg); color: #fff; }
+.ss-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 3rem; }
+.ss-sticky::before {
+  content: ''; position: absolute; inset: 0; opacity: 0.5; pointer-events: none;
+  background-image: linear-gradient(rgba(143, 211, 244, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(143, 211, 244, 0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
 }
-.ss-step { position: relative; padding-top: 56px; }
-.ss-step-dot {
-  position: absolute; top: 9px; left: 0; width: 26px; height: 26px; border-radius: 50%; background: #fff;
-  border: 3px solid var(--sky); box-shadow: 0 0 0 5px rgba(45, 168, 224, 0.15);
+.ss-process-head { position: relative; padding: 0 clamp(20px, 5vw, 64px); max-width: 1120px; width: 100%; margin: 0 auto; }
+.ss-process-head .ss-h2 { color: #fff; }
+.ss-process-head .ss-h2::after { background: linear-gradient(90deg, var(--sky), var(--sky-light)); }
+.ss-track-row { position: relative; display: flex; gap: 26px; padding: 0 clamp(20px, 5vw, 64px); width: max-content; }
+.ss-track-row::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 30px; height: 2px;
+  background: repeating-linear-gradient(90deg, rgba(45, 168, 224, 0.8) 0 12px, transparent 12px 20px);
 }
-.ss-step-n { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 2rem; line-height: 1; color: transparent; -webkit-text-stroke: 1.5px rgba(27, 58, 114, 0.5); }
-.ss-step h3 { margin-top: 0.4rem; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1rem; color: var(--navy); }
-.ss-step p { margin-top: 0.3rem; color: var(--muted); font-size: 0.9rem; }
+.ss-step {
+  position: relative; width: min(78vw, 340px); padding: 62px 26px 28px; border-radius: 22px;
+  background: linear-gradient(160deg, rgba(27, 58, 114, 0.6), rgba(10, 26, 60, 0.5));
+  border: 1px solid rgba(143, 211, 244, 0.3); backdrop-filter: blur(10px);
+}
+.ss-step-dot { position: absolute; top: 22px; left: 26px; width: 18px; height: 18px; border-radius: 50%; background: var(--sky-light); box-shadow: 0 0 0 6px rgba(45, 168, 224, 0.2), 0 0 22px rgba(45, 168, 224, 0.9); }
+.ss-step-n { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 4.2rem; line-height: 1; color: transparent; -webkit-text-stroke: 1.5px rgba(143, 211, 244, 0.7); }
+.ss-step h3 { margin: 0.5rem 0 0.4rem; font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.3rem; color: var(--sky-light); }
+.ss-step p { color: var(--muted-light); }
 
 .ss-price { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 2.2rem; }
-.ss-price-card { position: relative; padding: 26px 22px; border-radius: 20px; background: #fff; border: 1px solid rgba(27, 58, 114, 0.14); }
+.ss-price-card { position: relative; padding: 26px 22px; border-radius: 20px; background: #fff; border: 1px solid rgba(27, 58, 114, 0.14); transition: border-color 300ms ease, box-shadow 300ms ease; }
+.ss-price-card:hover { border-color: var(--sky); box-shadow: 0 22px 50px rgba(45, 168, 224, 0.18); }
 .ss-price-n {
   display: grid; place-items: center; width: 38px; height: 38px; margin-bottom: 0.8rem; border-radius: 50%;
   font-family: 'Sora', sans-serif; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--navy), var(--sky));
@@ -478,13 +564,16 @@ const STYLES = `
 
 .ss-work { margin-top: 2.2rem; border-top: 1px solid rgba(27, 58, 114, 0.16); }
 .ss-work-row {
-  display: grid; grid-template-columns: 0.9fr 1.6fr auto; gap: 20px; align-items: center; padding: 20px 6px;
+  position: relative; display: grid; grid-template-columns: 0.9fr 1.6fr auto; gap: 20px; align-items: center; padding: 22px 6px;
   border-bottom: 1px solid rgba(27, 58, 114, 0.16); transition: padding-left 300ms ease, background 300ms ease;
 }
-.ss-work-row:hover { padding-left: 16px; background: linear-gradient(90deg, rgba(45, 168, 224, 0.08), transparent); }
+.ss-work-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--sky), var(--navy)); transform: scaleY(0); transition: transform 300ms ease; }
+.ss-work-row:hover { padding-left: 18px; background: linear-gradient(90deg, rgba(45, 168, 224, 0.1), transparent); }
+.ss-work-row:hover::before { transform: scaleY(1); }
 .ss-work-row h3 { font-family: 'Sora', sans-serif; font-weight: 600; font-size: clamp(1.05rem, 1.8vw, 1.3rem); color: var(--navy); }
 .ss-work-row p { color: var(--muted); font-size: 0.92rem; }
-.ss-work-arrow { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.88rem; color: var(--sky); white-space: nowrap; }
+.ss-work-arrow { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.88rem; color: var(--sky); white-space: nowrap; transition: transform 300ms ease; }
+.ss-work-row:hover .ss-work-arrow { transform: translateX(6px); }
 
 .ss-acc { margin-top: 2.2rem; border-top: 1px solid rgba(27, 58, 114, 0.18); max-width: 780px; }
 .ss-acc-row { border-bottom: 1px solid rgba(27, 58, 114, 0.18); }
@@ -500,6 +589,7 @@ const STYLES = `
 .ss-acc-body { overflow: hidden; }
 .ss-acc-body p { padding: 0 4px 20px; max-width: 42rem; color: var(--muted); }
 
+.ss-contact-big { position: relative; }
 .ss-contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 2.2rem; }
 .ss-contact-item {
   display: flex; flex-direction: column; gap: 5px; padding: 22px; border-radius: 20px;
@@ -517,23 +607,36 @@ a.ss-contact-item:hover { transform: translateY(-5px); border-color: var(--sky-l
 
 @media (max-width: 900px) {
   .ss-hero-grid, .ss-host { grid-template-columns: 1fr; }
-  .ss-logo-card { max-width: 280px; justify-self: start; }
+  .ss-stage { justify-self: start; max-width: 340px; }
   .ss-host-head { position: static; }
   .ss-stats-in { grid-template-columns: 1fr 1fr; }
   .ss-stat:nth-child(2) { border-right: 0; }
   .ss-stat:nth-child(-n + 2) { border-bottom: 1px solid rgba(27, 58, 114, 0.12); }
   .ss-serve, .ss-services, .ss-price, .ss-contact-grid { grid-template-columns: 1fr; }
   .ss-host-list { grid-template-columns: 1fr; }
-  .ss-steps { grid-template-columns: 1fr; gap: 22px; }
-  .ss-steps::before { left: 12px; right: auto; top: 0; bottom: 0; width: 2px; height: auto; background: repeating-linear-gradient(180deg, rgba(45, 168, 224, 0.7) 0 10px, transparent 10px 18px); }
-  .ss-step { padding: 0 0 0 48px; }
-  .ss-step-dot { top: 2px; }
   .ss-work-row { grid-template-columns: 1fr; gap: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ss *, .ss *::before { transition-duration: 0.01ms !important; }
+  .ss-strip-track, .ss-title span { animation: none; }
 }
 `
+
+function useSpotlight(ref) {
+  useEffect(() => {
+    const root = ref.current
+    if (!root) return undefined
+    const onMove = e => {
+      const el = e.target.closest?.('.ss-hero, .ss-serve-card, .ss-service, .ss-spot')
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      el.style.setProperty('--mx', `${e.clientX - r.left}px`)
+      el.style.setProperty('--my', `${e.clientY - r.top}px`)
+    }
+    root.addEventListener('pointermove', onMove, { passive: true })
+    return () => root.removeEventListener('pointermove', onMove)
+  }, [ref])
+}
 
 function Reveal({ children, delay = 0 }) {
   return (
@@ -548,19 +651,80 @@ function Reveal({ children, delay = 0 }) {
   )
 }
 
-function Hero() {
+function ThreadRail() {
+  const { scrollYProgress } = useScroll()
+  const p = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.4 })
+  const h = useTransform(p, v => `${v * 100}%`)
   return (
-    <section className="ss-hero">
-      <div className="ss-hero-bg" aria-hidden="true">
-        <LetterGlitch
-          glitchColors={GLITCH_COLORS}
-          glitchSpeed={50}
-          centerVignette
-          outerVignette={false}
-          smooth
-          backgroundColor={HERO_BG}
-        />
+    <div className="ss-rail" aria-hidden="true">
+      <svg preserveAspectRatio="none">
+        <defs>
+          <mask id="ss-reveal">
+            <motion.rect x="0" y="0" width="20" fill="#fff" style={{ height: h }} />
+          </mask>
+        </defs>
+        <line x1="10" y1="0" x2="10" y2="100%" className="ss-rail-track" />
+        <line x1="10" y1="0" x2="10" y2="100%" className="ss-rail-live" mask="url(#ss-reveal)" />
+      </svg>
+      <motion.span className="ss-needle" style={{ top: h }} />
+    </div>
+  )
+}
+
+function Terminal() {
+  const [shown, setShown] = useState(0)
+  const [chars, setChars] = useState(0)
+
+  useEffect(() => {
+    const line = termLines[shown]
+    if (!line) {
+      const reset = setTimeout(() => {
+        setShown(0)
+        setChars(0)
+      }, 2600)
+      return () => clearTimeout(reset)
+    }
+    if (chars < line.t.length) {
+      const t = setTimeout(() => setChars(c => c + 1), line.c === 'cmd' ? 45 : 14)
+      return () => clearTimeout(t)
+    }
+    const t = setTimeout(() => {
+      setShown(s => s + 1)
+      setChars(0)
+    }, 420)
+    return () => clearTimeout(t)
+  }, [shown, chars])
+
+  return (
+    <motion.div className="ss-term" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}>
+      <div className="ss-term-bar">
+        <i /><i /><i />
+        <span>site-solutions ~ deploy</span>
       </div>
+      <div className="ss-term-body" aria-hidden="true">
+        {termLines.slice(0, shown).map((l, i) => (
+          <div key={i} className={l.c}>{l.t}</div>
+        ))}
+        {termLines[shown] && (
+          <div className={termLines[shown].c}>
+            {termLines[shown].t.slice(0, chars)}
+            <span className="ss-caret" />
+          </div>
+        )}
+        {!termLines[shown] && <span className="ss-caret" />}
+      </div>
+    </motion.div>
+  )
+}
+
+function Hero() {
+  const ref = useRef(null)
+  return (
+    <section className="ss-hero" ref={ref}>
+      <div className="ss-hero-bg" aria-hidden="true">
+        <LetterGlitch glitchColors={GLITCH_COLORS} glitchSpeed={50} centerVignette outerVignette={false} smooth backgroundColor={HERO_BG} />
+      </div>
+      <div className="ss-hero-glow" aria-hidden="true" />
       <div className="ss-hero-shade" aria-hidden="true" />
       <div className="ss-hero-grid">
         <div>
@@ -587,15 +751,60 @@ function Hero() {
             <a href="#work" className="ss-btn ss-btn-ghost-light">See our work</a>
           </motion.div>
         </div>
-        <motion.div className="ss-logo-card" initial={{ opacity: 0, scale: 0.92, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: 0.5, duration: 1, ease: [0.22, 1, 0.36, 1] }}>
-          <img src="/logos/site-solutions.png" alt="R&R Site Solutions logo" />
-        </motion.div>
+        <div className="ss-stage">
+          <motion.div className="ss-logo-card" initial={{ opacity: 0, scale: 0.92, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: 0.5, duration: 1, ease: [0.22, 1, 0.36, 1] }}>
+            <img src="/logos/site-solutions.png" alt="R&R Site Solutions logo" />
+          </motion.div>
+          <Terminal />
+        </div>
       </div>
       <motion.div className="ss-scroll" animate={{ y: [0, 10, 0] }} transition={{ duration: 1.8, repeat: Infinity }}>
         scroll ↓
       </motion.div>
     </section>
   )
+}
+
+function Strip() {
+  const row = [...ticker, ...ticker]
+  return (
+    <div className="ss-strip" aria-hidden="true">
+      <div className="ss-strip-track">
+        {[0, 1].map(k => (
+          <div className="ss-strip-item" key={k}>
+            {row.map((t, i) => (
+              <span key={`${k}-${i}`} style={{ display: 'contents' }}>
+                <span>{t}</span>
+                <i>✦</i>
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CountUp({ text }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.6 })
+  const value = useMotionValue(0)
+  const [out, setOut] = useState(text)
+  const parts = text.match(/^(\d+)([–/].*)?$/)
+
+  useEffect(() => {
+    if (!parts || !inView) return undefined
+    const target = parseInt(parts[1], 10)
+    const controls = animate(value, target, {
+      duration: 1.2,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: v => setOut(`${Math.round(v)}${parts[2] || ''}`),
+    })
+    return () => controls.stop()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inView])
+
+  return <strong ref={ref}>{parts && !inView ? `0${parts[2] || ''}` : out}</strong>
 }
 
 function Stats() {
@@ -611,7 +820,7 @@ function Stats() {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.5, delay: i * 0.08 }}
           >
-            <strong>{s.big}</strong>
+            <CountUp text={s.big} />
             <span>{s.small}</span>
           </motion.div>
         ))}
@@ -629,7 +838,7 @@ function Serve() {
       <div className="ss-serve">
         {segments.map((s, i) => (
           <motion.div
-            className="ss-serve-card"
+            className="ss-serve-card ss-spot"
             key={s.title}
             initial={{ opacity: 0, y: 34 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -638,7 +847,14 @@ function Serve() {
           >
             <div className="ss-bars" aria-hidden="true">
               {[1, 2, 3].map(n => (
-                <i key={n} className={n <= s.level ? 'on' : ''} />
+                <motion.i
+                  key={n}
+                  className={n <= s.level ? 'on' : ''}
+                  initial={{ scaleY: 0 }}
+                  whileInView={{ scaleY: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + n * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                />
               ))}
             </div>
             <h3>{s.title}</h3>
@@ -647,6 +863,42 @@ function Serve() {
         ))}
       </div>
     </section>
+  )
+}
+
+function TiltCard({ children, index }) {
+  const ref = useRef(null)
+  const rx = useMotionValue(0)
+  const ry = useMotionValue(0)
+  const sx = useSpring(rx, { stiffness: 220, damping: 20 })
+  const sy = useSpring(ry, { stiffness: 220, damping: 20 })
+
+  const onMove = e => {
+    const r = ref.current.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width - 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    ry.set(px * 10)
+    rx.set(-py * 10)
+  }
+  const onLeave = () => {
+    rx.set(0)
+    ry.set(0)
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      className="ss-service"
+      style={{ rotateX: sx, rotateY: sy }}
+      onPointerMove={onMove}
+      onPointerLeave={onLeave}
+      initial={{ opacity: 0, y: 34 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.55, delay: (index % 3) * 0.08 }}
+    >
+      {children}
+    </motion.div>
   )
 }
 
@@ -659,17 +911,11 @@ function Services() {
         </Reveal>
         <div className="ss-services">
           {services.map((s, i) => (
-            <motion.div
-              className="ss-service"
-              key={s.name}
-              initial={{ opacity: 0, y: 34 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.55, delay: (i % 3) * 0.08 }}
-            >
+            <TiltCard key={s.name} index={i}>
+              <span className="ss-service-n">{String(i + 1).padStart(2, '0')}</span>
               <h3>{s.name}</h3>
               <p>{s.desc}</p>
-            </motion.div>
+            </TiltCard>
           ))}
         </div>
       </section>
@@ -687,12 +933,21 @@ function Hosting() {
               <h2 className="ss-h2">We host it too</h2>
               <p className="ss-sub">Once your site is live, we keep it fast, secure and online, so you can get on with running your business.</p>
               <p className="ss-note">Hosting is billed monthly. Support and maintenance plans are tailored to what you need.</p>
+              <ul className="ss-status" aria-hidden="true">
+                {statusRows.map(r => (
+                  <li key={r}>
+                    <span className="ss-pulse" />
+                    {r}
+                    <em>online</em>
+                  </li>
+                ))}
+              </ul>
             </Reveal>
           </div>
           <div className="ss-host-list">
             {hosting.map((h, i) => (
               <motion.div
-                className="ss-host-item"
+                className="ss-host-item ss-spot"
                 key={h.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -711,29 +966,39 @@ function Hosting() {
 }
 
 function Process() {
+  const ref = useRef(null)
+  const rowRef = useRef(null)
+  const [dist, setDist] = useState(0)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  const x = useTransform(scrollYProgress, [0.05, 0.95], [0, -dist])
+
+  useEffect(() => {
+    const measure = () => {
+      if (rowRef.current) setDist(Math.max(0, rowRef.current.scrollWidth - window.innerWidth))
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
+
   return (
-    <section className="ss-section">
-      <Reveal>
-        <h2 className="ss-h2">Our process</h2>
-      </Reveal>
-      <div className="ss-steps">
-        {process.map((s, i) => (
-          <motion.div
-            className="ss-step"
-            key={s.n}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.55, delay: i * 0.08 }}
-          >
-            <span className="ss-step-dot" />
-            <div className="ss-step-n">{s.n}</div>
-            <h3>{s.title}</h3>
-            <p>{s.desc}</p>
-          </motion.div>
-        ))}
+    <div className="ss-process" ref={ref}>
+      <div className="ss-sticky">
+        <div className="ss-process-head">
+          <h2 className="ss-h2">Our process</h2>
+        </div>
+        <motion.div className="ss-track-row" ref={rowRef} style={{ x }}>
+          {process.map(s => (
+            <div className="ss-step" key={s.n}>
+              <span className="ss-step-dot" />
+              <div className="ss-step-n">{s.n}</div>
+              <h3>{s.title}</h3>
+              <p>{s.desc}</p>
+            </div>
+          ))}
+        </motion.div>
       </div>
-    </section>
+    </div>
   )
 }
 
@@ -748,7 +1013,7 @@ function Pricing() {
         <div className="ss-price">
           {pricingSteps.map((s, i) => (
             <motion.div
-              className="ss-price-card"
+              className="ss-price-card ss-spot"
               key={s.title}
               initial={{ opacity: 0, y: 34 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -835,7 +1100,7 @@ function Faq() {
 function Contact() {
   return (
     <div className="ss-navy" id="contact">
-      <section className="ss-section">
+      <section className="ss-section ss-contact-big">
         <Reveal>
           <h2 className="ss-h2">Ready to launch your digital future?</h2>
           <div className="ss-cta-row">
@@ -875,17 +1140,21 @@ function Contact() {
 }
 
 export default function SiteSolutions() {
+  const rootRef = useRef(null)
   const { scrollYProgress } = useScroll()
   const bar = useSpring(scrollYProgress, { stiffness: 100, damping: 26, mass: 0.4 })
+  useSpotlight(rootRef)
 
   return (
-    <div className="ss">
+    <div className="ss" ref={rootRef}>
       <style>{STYLES}</style>
       <motion.div className="ss-bar" style={{ scaleX: bar }} />
+      <ThreadRail />
       <Link to="/" className="ss-back">← Back to hub</Link>
 
       <main>
         <Hero />
+        <Strip />
         <Stats />
         <Serve />
         <Services />
