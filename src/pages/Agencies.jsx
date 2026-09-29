@@ -85,6 +85,7 @@ const STYLES = `
   line-height: 1.6;
   overflow-x: clip;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 .rr *, .rr *::before, .rr *::after { box-sizing: border-box; }
 .rr h1, .rr h2, .rr h3, .rr h4, .rr p, .rr ul { margin: 0; padding: 0; }
@@ -119,7 +120,7 @@ const STYLES = `
 @media (max-width: 900px) { .rr-rail { display: none; } }
 
 .rr-hero {
-  position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center;
+  position: relative; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; text-align: center;
   padding: 110px 24px 80px; overflow: hidden; isolation: isolate;
   background:
     radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgba(240, 193, 90, 0.2), transparent 70%),
@@ -164,7 +165,7 @@ const STYLES = `
 }
 
 .rr-process { position: relative; height: 320vh; }
-.rr-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 3rem; }
+.rr-sticky { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 3rem; }
 .rr-process-head { padding: 0 clamp(20px, 6vw, 80px); max-width: 1240px; width: 100%; margin: 0 auto; }
 .rr-track-row { position: relative; display: flex; gap: 28px; padding: 0 clamp(20px, 6vw, 80px); width: max-content; }
 .rr-track-row::before {
@@ -267,6 +268,20 @@ const STYLES = `
   .rr-why-card, .rr-why-card:nth-child(n) { grid-column: auto; }
   .rr-contact-grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 600px) {
+  .rr-back { top: 12px; left: 12px; padding: 6px 12px; font-size: 0.82rem; }
+  .rr-hero { padding: 96px 18px 72px; }
+  .rr-btn { padding: 13px 22px; font-size: 0.95rem; }
+  .rr-cta-row { flex-direction: column; align-items: stretch; }
+  .rr-section { padding-top: 64px; padding-bottom: 64px; }
+  .rr-sticky { gap: 2rem; }
+  .rr-step { padding: 56px 22px 24px; }
+  .rr-step-n { font-size: 4.2rem; }
+  .rr-panel { min-height: 0; border-radius: 22px; }
+  .rr-tab { padding: 16px 18px; }
+  .rr-contact { padding-bottom: 96px; }
+  .rr-contact-item { padding: 22px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .rr-title text { animation: none; fill: rgba(240, 193, 90, 0.95); stroke-dasharray: none; }
   .rr *, .rr *::before { transition-duration: 0.01ms !important; }
@@ -278,6 +293,9 @@ const DOME_STYLES = `
   position: relative; width: 100%; max-width: 1200px; height: min(78vh, 820px); min-height: 480px;
   margin: 3rem auto 0; border-radius: 28px; overflow: hidden; contain: paint; isolation: isolate;
   border: 1px dashed rgba(224, 169, 59, 0.45); box-shadow: 0 0 90px rgba(61, 107, 255, 0.14);
+}
+@media (max-width: 700px) {
+  .rr-dome { height: 62vh; height: 62dvh; min-height: 420px; margin-top: 2rem; border-radius: 20px; }
 }
 .rr-dome .sphere-root { overflow: hidden; }
 body.dg-scroll-lock { overflow: hidden; }
@@ -293,7 +311,7 @@ body.dg-scroll-lock { overflow: hidden; }
 .sphere, .item, .item__image { transform-style: preserve-3d; }
 main.sphere-main {
   position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden;
-  touch-action: none; user-select: none; -webkit-user-select: none;
+  touch-action: pan-y; user-select: none; -webkit-user-select: none;
   background: var(--overlay-blur-color, #120f17);
 }
 .stage {
@@ -1058,8 +1076,14 @@ function Process() {
       if (rowRef.current) setDist(Math.max(0, rowRef.current.scrollWidth - window.innerWidth))
     }
     measure()
+    const t = setTimeout(measure, 600)
     window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
+    window.addEventListener('orientationchange', measure)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('orientationchange', measure)
+    }
   }, [])
 
   return (
@@ -1191,6 +1215,8 @@ function Gallery() {
           dragDampening={2}
           overlayBlurColor="#0a0a12"
           grayscale={false}
+          openedImageWidth="min(400px, 78vw)"
+          openedImageHeight="min(400px, 78vw)"
         />
       </motion.div>
       <p className="rr-hint">Drag to explore, tap a photo to enlarge</p>
