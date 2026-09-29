@@ -693,7 +693,7 @@ function Hero() {
         <motion.div className="sl-logo-wrap" ref={wrapRef} style={{ rotateX: rx, rotateY: ry }}>
           <motion.img
             className="sl-logo"
-            src="/logos/sports-lifestyle-white.png"
+            src="/logos/sports-lifestyle.png"
             alt="R&R Sport & Lifestyle"
             initial={{ opacity: 0, clipPath: 'inset(0 50% 0 50%)' }}
             animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0%)' }}
