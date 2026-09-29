@@ -7,7 +7,7 @@ const STORE_URL = 'https://www.randragencies.online'
 const GALLERY_COUNT = 16
 
 const galleryImages = Array.from({ length: GALLERY_COUNT }, (_, i) => ({
-  src: encodeURI(`/sports/product1 (${i + 1}).jpg`),
+  src: encodeURI(`/sports/product1 (${i + 1}).jpeg`),
   alt: `R&R Sport & Lifestyle product ${i + 1}`,
 }))
 
